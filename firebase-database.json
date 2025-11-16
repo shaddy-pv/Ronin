@@ -1,0 +1,182 @@
+{
+  "ronin": {
+    "iot": {
+      "mq2": 260,
+      "mq135": 310,
+      "temperature": 28.4,
+      "humidity": 52,
+      "flame": false,
+      "motion": false,
+      "hazardScore": 22,
+      "status": {
+        "online": true,
+        "lastHeartbeat": 1731765000000
+      }
+    },
+    "rover": {
+      "control": {
+        "direction": "stop",
+        "speed": 40,
+        "mode": "manual",
+        "emergency": false
+      },
+      "status": {
+        "battery": 78,
+        "location": "Zone A",
+        "online": true
+      }
+    },
+    "alerts": {
+      "alert_001": {
+        "timestamp": 1731764800000,
+        "type": "Gas Leak",
+        "severity": "medium",
+        "summary": "MQ-135 detected elevated air quality levels",
+        "resolved": false
+      },
+      "alert_002": {
+        "timestamp": 1731764400000,
+        "type": "Temperature",
+        "severity": "low",
+        "summary": "Temperature slightly above baseline",
+        "resolved": true
+      },
+      "alert_003": {
+        "timestamp": 1731764200000,
+        "type": "Motion Detected",
+        "severity": "low",
+        "summary": "PIR sensor detected movement in Zone A",
+        "resolved": true
+      }
+    },
+    "history": {
+      "log_001": {
+        "timestamp": 1731764700000,
+        "mq2": 240,
+        "mq135": 285,
+        "temperature": 27.8,
+        "flame": false,
+        "motion": false,
+        "hazardScore": 18,
+        "riskLevel": "SAFE"
+      },
+      "log_002": {
+        "timestamp": 1731764600000,
+        "mq2": 255,
+        "mq135": 299,
+        "temperature": 28.2,
+        "flame": false,
+        "motion": false,
+        "hazardScore": 21,
+        "riskLevel": "SAFE"
+      },
+      "log_003": {
+        "timestamp": 1731764500000,
+        "mq2": 270,
+        "mq135": 315,
+        "temperature": 28.6,
+        "flame": false,
+        "motion": false,
+        "hazardScore": 25,
+        "riskLevel": "SAFE"
+      },
+      "log_004": {
+        "timestamp": 1731764400000,
+        "mq2": 265,
+        "mq135": 320,
+        "temperature": 28.9,
+        "flame": false,
+        "motion": true,
+        "hazardScore": 26,
+        "riskLevel": "SAFE"
+      },
+      "log_005": {
+        "timestamp": 1731764300000,
+        "mq2": 258,
+        "mq135": 305,
+        "temperature": 28.1,
+        "flame": false,
+        "motion": false,
+        "hazardScore": 20,
+        "riskLevel": "SAFE"
+      },
+      "log_006": {
+        "timestamp": 1731764200000,
+        "mq2": 245,
+        "mq135": 290,
+        "temperature": 27.5,
+        "flame": false,
+        "motion": false,
+        "hazardScore": 17,
+        "riskLevel": "SAFE"
+      },
+      "log_007": {
+        "timestamp": 1731764100000,
+        "mq2": 250,
+        "mq135": 295,
+        "temperature": 27.9,
+        "flame": false,
+        "motion": false,
+        "hazardScore": 19,
+        "riskLevel": "SAFE"
+      },
+      "log_008": {
+        "timestamp": 1731764000000,
+        "mq2": 262,
+        "mq135": 308,
+        "temperature": 28.3,
+        "flame": false,
+        "motion": false,
+        "hazardScore": 22,
+        "riskLevel": "SAFE"
+      },
+      "log_009": {
+        "timestamp": 1731763900000,
+        "mq2": 268,
+        "mq135": 318,
+        "temperature": 28.7,
+        "flame": false,
+        "motion": false,
+        "hazardScore": 24,
+        "riskLevel": "SAFE"
+      },
+      "log_010": {
+        "timestamp": 1731763800000,
+        "mq2": 272,
+        "mq135": 325,
+        "temperature": 29.1,
+        "flame": false,
+        "motion": false,
+        "hazardScore": 27,
+        "riskLevel": "SAFE"
+      }
+    },
+    "settings": {
+      "thresholds": {
+        "safeMax": 30,
+        "warningMax": 60,
+        "dangerMin": 60
+      },
+      "sensorRanges": {
+        "mq135": {
+          "min": 200,
+          "max": 1000
+        },
+        "mq2": {
+          "min": 200,
+          "max": 800
+        },
+        "temp": {
+          "min": 15,
+          "max": 45
+        }
+      },
+      "roverBehavior": {
+        "autoDispatchEnabled": true,
+        "autoDispatchThreshold": 60,
+        "returnToBaseAfterCheck": true,
+        "checkDuration": 300
+      }
+    }
+  }
+}
