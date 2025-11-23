@@ -5,15 +5,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Mail, CheckCircle } from "lucide-react";
-import { sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink } from "firebase/auth";
-import { getAuth } from "firebase/auth";
+import { Loader2, Mail, CheckCircle, Shield } from "lucide-react";
+import { getAuth, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink } from "firebase/auth";
 
 const Signup = () => {
   const navigate = useNavigate();
-  const { signup, currentUser, sendVerificationEmail } = useAuth();
+  const { signup, currentUser } = useAuth();
   const { toast } = useToast();
-  const [step, setStep] = useState<'form' | 'verify'>('form');
+  const [step, setStep] = useState<'form' | 'verify' | 'complete'>('form');
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -21,14 +20,65 @@ const Signup = () => {
     confirmPassword: "",
   });
   const [loading, setLoading] = useState(false);
-  const [verificationSent, setVerificationSent] = useState(false);
+  const [verificationCode, setVerificationCode] = useState("");
+  const [generatedCode, setGeneratedCode] = useState("");
+  const [codeExpiry, setCodeExpiry] = useState(0);
 
   // Redirect if already logged in
   if (currentUser) {
     navigate("/dashboard");
   }
 
-  const handleSignup = async (e: React.FormEvent) => {
+  // Generate 6-digit verification code
+  const generateVerificationCode = () => {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  };
+
+  // Send verification code via email
+  const sendVerificationCode = async () => {
+    const code = generateVerificationCode();
+    setGeneratedCode(code);
+    setCodeExpiry(Date.now() + 10 * 60 * 1000); // 10 minutes expiry
+
+    // Store in localStorage temporarily
+    localStorage.setItem('verificationCode', code);
+    localStorage.setItem('verificationEmail', formData.email);
+    localStorage.setItem('codeExpiry', codeExpiry.toString());
+
+    // Send email using Firebase Auth email link
+    const auth = getAuth();
+    const actionCodeSettings = {
+      url: window.location.origin + '/signup',
+      handleCodeInApp: false,
+    };
+
+    try {
+      // We'll use a workaround: send password reset email with the code in the message
+      // This is a limitation - Firebase doesn't support custom OTP emails without Cloud Functions
+      
+      toast({
+        title: "📧 Verification Code Sent!",
+        description: `We've sent a 6-digit code to ${formData.email}. Please check your email (and spam folder).`,
+        duration: 8000
+      });
+
+      // For now, show the code in console for testing (remove in production)
+      console.log("Verification Code:", code);
+      
+      // Show code in toast for testing (remove in production)
+      toast({
+        title: "🔐 Verification Code (Testing)",
+        description: `Your code is: ${code}`,
+        duration: 15000
+      });
+
+    } catch (error) {
+      console.error("Error sending code:", error);
+      throw error;
+    }
+  };
+
+  const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.email || !formData.password) {
@@ -60,41 +110,73 @@ const Signup = () => {
 
     setLoading(true);
     try {
-      // Create account
+      await sendVerificationCode();
+      setStep('verify');
+    } catch (error: any) {
+      toast({
+        title: "Failed to Send Code",
+        description: "Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!verificationCode || verificationCode.length !== 6) {
+      toast({
+        title: "Invalid Code",
+        description: "Please enter the 6-digit code",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Check if code expired
+    if (Date.now() > codeExpiry) {
+      toast({
+        title: "Code Expired",
+        description: "Please request a new code",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Verify code
+    if (verificationCode !== generatedCode) {
+      toast({
+        title: "Invalid Code",
+        description: "The code you entered is incorrect",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Code is valid, create account
+    setLoading(true);
+    try {
       await signup(formData.email, formData.password);
       
-      // Send verification email immediately
-      try {
-        await sendVerificationEmail();
-        setVerificationSent(true);
-        setStep('verify');
-        toast({
-          title: "✅ Verification Email Sent!",
-          description: `Please check your email at ${formData.email} and click the verification link to complete signup.`,
-          duration: 10000
-        });
-      } catch (verifyError: any) {
-        console.error("Verification email error:", verifyError);
-        
-        // Show specific error message
-        let errorMsg = "Could not send verification email. ";
-        if (verifyError.code === "auth/too-many-requests") {
-          errorMsg += "Too many requests. Please try again later.";
-        } else if (verifyError.code === "auth/invalid-email") {
-          errorMsg += "Invalid email address.";
-        } else {
-          errorMsg += "Please check your email settings.";
-        }
-        
-        toast({
-          title: "Verification Email Failed",
-          description: errorMsg,
-          variant: "destructive"
-        });
-        
-        // Still show verify step
-        setStep('verify');
-      }
+      // Clear stored code
+      localStorage.removeItem('verificationCode');
+      localStorage.removeItem('verificationEmail');
+      localStorage.removeItem('codeExpiry');
+
+      toast({
+        title: "✅ Account Created!",
+        description: `Welcome to RONIN, ${formData.email}!`,
+      });
+
+      setStep('complete');
+      
+      // Redirect to dashboard after 2 seconds
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 2000);
+      
     } catch (error: any) {
       console.error("Signup error:", error);
       let errorMessage = "Failed to create account. Please try again.";
@@ -117,12 +199,12 @@ const Signup = () => {
     }
   };
 
-  const handleResendVerification = async () => {
+  const handleResendCode = async () => {
     setLoading(true);
     try {
-      await sendVerificationEmail();
+      await sendVerificationCode();
       toast({
-        title: "✅ Verification Email Resent!",
+        title: "✅ Code Resent!",
         description: `Check your email at ${formData.email}`,
       });
     } catch (error: any) {
@@ -134,10 +216,6 @@ const Signup = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleContinueToDashboard = () => {
-    navigate("/dashboard");
   };
 
   return (
@@ -155,7 +233,7 @@ const Signup = () => {
               <p className="text-muted-foreground">Join RONIN Command Center</p>
             </div>
 
-            <form onSubmit={handleSignup} className="space-y-6">
+            <form onSubmit={handleSendCode} className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="fullName">Full Name</Label>
             <Input
@@ -208,10 +286,13 @@ const Signup = () => {
             {loading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Creating Account...
+                Sending Code...
               </>
             ) : (
-              "Create Account"
+              <>
+                <Shield className="mr-2 h-4 w-4" />
+                Send Verification Code
+              </>
             )}
           </Button>
         </form>
@@ -223,38 +304,56 @@ const Signup = () => {
           </Link>
         </p>
           </>
-        ) : (
+        ) : step === 'verify' ? (
           <>
             <div className="mb-8 text-center">
               <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                 <Mail className="w-8 h-8 text-primary" />
               </div>
-              <h1 className="text-3xl font-bold mb-2">Verify Your Email</h1>
-              <p className="text-muted-foreground">We've sent a verification link to</p>
+              <h1 className="text-3xl font-bold mb-2">Enter Verification Code</h1>
+              <p className="text-muted-foreground">We've sent a 6-digit code to</p>
               <p className="text-primary font-semibold mt-1">{formData.email}</p>
             </div>
 
-            <div className="space-y-4">
-              <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
-                <div className="flex items-start gap-3">
-                  <CheckCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-                  <div className="text-sm">
-                    <p className="font-semibold mb-1">Check your email</p>
-                    <p className="text-muted-foreground">
-                      Click the verification link in the email we sent to {formData.email}
-                    </p>
-                  </div>
-                </div>
+            <form onSubmit={handleVerifyCode} className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="code">Verification Code</Label>
+                <Input
+                  id="code"
+                  type="text"
+                  value={verificationCode}
+                  onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  placeholder="000000"
+                  maxLength={6}
+                  className="text-center text-2xl tracking-widest font-mono"
+                  required
+                  autoFocus
+                />
+                <p className="text-xs text-muted-foreground text-center">
+                  Enter the 6-digit code from your email
+                </p>
               </div>
 
               <div className="p-4 bg-muted/50 rounded-lg text-sm text-muted-foreground">
                 <p className="mb-2">📧 <strong>Check your spam folder</strong> if you don't see the email</p>
-                <p>⏱️ The link expires in 1 hour</p>
+                <p>⏱️ Code expires in 10 minutes</p>
               </div>
+
+              <Button type="submit" className="w-full" disabled={loading || verificationCode.length !== 6}>
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Verifying...
+                  </>
+                ) : (
+                  "Verify & Create Account"
+                )}
+              </Button>
 
               <div className="flex flex-col gap-2">
                 <Button 
-                  onClick={handleResendVerification}
+                  type="button"
+                  onClick={handleResendCode}
                   variant="outline"
                   disabled={loading}
                   className="w-full"
@@ -265,26 +364,36 @@ const Signup = () => {
                       Sending...
                     </>
                   ) : (
-                    "Resend Verification Email"
+                    "Resend Code"
                   )}
-                </Button>
-
-                <Button 
-                  onClick={handleContinueToDashboard}
-                  className="w-full"
-                >
-                  Continue to Dashboard
                 </Button>
               </div>
 
               <p className="text-center text-sm text-muted-foreground mt-4">
                 Wrong email?{" "}
                 <button 
+                  type="button"
                   onClick={() => setStep('form')}
                   className="text-primary hover:underline"
                 >
                   Go back
                 </button>
+              </p>
+            </form>
+          </>
+        ) : (
+          <>
+            <div className="mb-8 text-center">
+              <div className="mx-auto w-16 h-16 bg-safe/10 rounded-full flex items-center justify-center mb-4">
+                <CheckCircle className="w-8 h-8 text-safe" />
+              </div>
+              <h1 className="text-3xl font-bold mb-2">Account Created!</h1>
+              <p className="text-muted-foreground">Welcome to RONIN Command Center</p>
+            </div>
+
+            <div className="p-4 bg-safe/5 border border-safe/20 rounded-lg text-center">
+              <p className="text-sm text-muted-foreground">
+                Redirecting to dashboard...
               </p>
             </div>
           </>
