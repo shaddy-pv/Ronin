@@ -1,13 +1,43 @@
 import { useFirebase } from "@/contexts/FirebaseContext";
-import { AlertTriangle, WifiOff } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { WifiOff } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
 
 export const FirebaseConnectionStatus = () => {
-  const { dbConnected, iotError } = useFirebase();
+  const { dbConnected, iotError, iotLoading } = useFirebase();
+  const { currentUser } = useAuth();
+  const [showError, setShowError] = useState(false);
 
-  // Don't show anything if connected
-  if (dbConnected && !iotError) {
+  useEffect(() => {
+    // Only show error if:
+    // 1. User is logged in (not on login/signup page)
+    // 2. Not loading
+    // 3. Actually has an error
+    // 4. Wait 5 seconds before showing (give time to connect)
+    
+    if (!currentUser) {
+      setShowError(false);
+      return;
+    }
+
+    if (iotLoading) {
+      setShowError(false);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      if (!dbConnected && iotError) {
+        setShowError(true);
+      }
+    }, 5000); // Wait 5 seconds before showing error
+
+    return () => clearTimeout(timer);
+  }, [dbConnected, iotError, iotLoading, currentUser]);
+
+  // Don't show anything if connected or not logged in
+  if (!showError || !currentUser) {
     return null;
   }
 
