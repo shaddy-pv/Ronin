@@ -5,6 +5,8 @@ import {
   createUserWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
+  sendPasswordResetEmail,
+  sendEmailVerification,
   User
 } from 'firebase/auth';
 import { app } from '@/lib/firebase';
@@ -15,6 +17,9 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   signup: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
+  sendVerificationEmail: () => Promise<void>;
+  isEmailVerified: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -53,12 +58,29 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     await signOut(auth);
   };
 
+  const resetPassword = async (email: string) => {
+    await sendPasswordResetEmail(auth, email);
+  };
+
+  const sendVerificationEmail = async () => {
+    if (currentUser) {
+      await sendEmailVerification(currentUser);
+    } else {
+      throw new Error('No user is currently logged in');
+    }
+  };
+
+  const isEmailVerified = currentUser?.emailVerified ?? false;
+
   const value: AuthContextType = {
     currentUser,
     loading,
     login,
     signup,
-    logout
+    logout,
+    resetPassword,
+    sendVerificationEmail,
+    isEmailVerified
   };
 
   return (

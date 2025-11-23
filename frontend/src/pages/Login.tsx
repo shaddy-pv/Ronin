@@ -9,11 +9,12 @@ import { Loader2 } from "lucide-react";
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login, currentUser } = useAuth();
+  const { login, currentUser, resetPassword } = useAuth();
   const { toast } = useToast();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
 
   // Redirect if already logged in
   if (currentUser) {
@@ -61,6 +62,43 @@ const Login = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePasswordReset = async () => {
+    if (!email) {
+      toast({
+        title: "Email Required",
+        description: "Please enter your email address to reset your password",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setResetLoading(true);
+    try {
+      await resetPassword(email);
+      toast({
+        title: "Password Reset Email Sent",
+        description: `Check your inbox at ${email} for password reset instructions.`
+      });
+    } catch (error: any) {
+      console.error("Password reset error:", error);
+      let errorMessage = "Failed to send password reset email.";
+      
+      if (error.code === "auth/user-not-found") {
+        errorMessage = "No account found with this email.";
+      } else if (error.code === "auth/invalid-email") {
+        errorMessage = "Invalid email address.";
+      }
+      
+      toast({
+        title: "Password Reset Failed",
+        description: errorMessage,
+        variant: "destructive"
+      });
+    } finally {
+      setResetLoading(false);
     }
   };
 
@@ -112,6 +150,17 @@ const Login = () => {
               "Login"
             )}
           </Button>
+
+          <div className="text-center">
+            <button
+              type="button"
+              onClick={handlePasswordReset}
+              disabled={resetLoading}
+              className="text-sm text-primary hover:underline disabled:opacity-50"
+            >
+              {resetLoading ? "Sending..." : "Forgot Password?"}
+            </button>
+          </div>
         </form>
 
         <p className="mt-6 text-center text-sm text-muted-foreground">

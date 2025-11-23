@@ -1,0 +1,38 @@
+{
+  "rules": {
+    "ronin": {
+      ".read": "auth != null",
+      ".write": "auth != null",
+      "iot": {
+        ".indexOn": ["hazardScore", "status/lastHeartbeat"],
+        ".validate": "newData.hasChildren(['mq2', 'mq135', 'temperature', 'humidity', 'hazardScore'])"
+      },
+      "rover": {
+        "control": {
+          ".indexOn": ["mode", "direction"]
+        },
+        "status": {
+          ".indexOn": ["online", "battery"]
+        },
+        "config": {
+          ".read": "auth != null",
+          ".write": "auth != null"
+        }
+      },
+      "alerts": {
+        ".indexOn": ["timestamp", "severity", "resolved"]
+      },
+      "history": {
+        ".indexOn": ["timestamp", "riskLevel"]
+      },
+      "settings": {
+        ".read": "auth != null",
+        ".write": "auth != null"
+      },
+      "systemInfo": {
+        ".read": "auth != null",
+        ".write": "auth != null"
+      }
+    }
+  }
+}

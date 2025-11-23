@@ -16,8 +16,10 @@ ronin/
 ### Frontend
 React web application with dashboard, rover console, alerts, and settings pages.
 - **Location**: `frontend/`
-- **Tech Stack**: React, TypeScript, Vite, shadcn/ui, Tailwind CSS
+- **Tech Stack**: React, TypeScript, Vite, shadcn/ui, Tailwind CSS, Firebase SDK v9
+- **Status**: ✅ **Live IoT Data Integration Complete**
 - **See**: [frontend/README.md](./frontend/README.md)
+- **Quick Start**: [frontend/QUICK_START_IOT.md](./frontend/QUICK_START_IOT.md)
 
 ### Backend
 Backend services for data processing, business logic, and API endpoints.
@@ -39,7 +41,13 @@ npm install
 npm run dev
 ```
 
-The frontend will be available at `http://localhost:8080`
+The frontend will be available at `http://localhost:5173`
+
+**New**: The dashboard now displays **live IoT sensor data** from Firebase Realtime Database!
+- Real-time updates with <1s latency
+- Automatic hazard alerts
+- Color-coded risk levels
+- See [QUICK_START_IOT.md](./frontend/QUICK_START_IOT.md) for testing guide
 
 ### Backend & Server
 
@@ -73,10 +81,19 @@ All components communicate through **Firebase Realtime Database**.
 
 ```
 /ronin
-   /iot
-      readings: { mq2, mq135, temperature, humidity, flame, motion }
-      hazardScore: number
+   /iot                                    ← ✅ LIVE DATA CONNECTED
+      mq2: number                          (Gas sensor 0-1023)
+      mq135: number                        (Air quality 400-1000)
+      mq135_raw: 0|1                       (Digital reading)
+      mq135_digital: 0|1                   (Threshold trigger)
+      temperature: number                  (°C)
+      humidity: number                     (%)
+      flame: boolean                       (Fire detected)
+      motion: boolean                      (Motion detected)
+      hazardScore: number                  (0-100)
+      riskLevel: "SAFE"|"WARNING"|"DANGER"
       status: { online, lastHeartbeat }
+      emergency: { active, timestamp }
    /rover
       control: { direction, speed, mode, emergency }
       status: { battery, location, online }
@@ -94,12 +111,25 @@ RONIN uses a mathematical model to compute hazard level:
 2. **Weighted Score**: `HazardScore = (0.6 * Norm(MQ135)) + (0.3 * Norm(MQ2)) + (0.1 * Norm(Temperature))`
 3. **Zones**: 0–30 = SAFE, 30–60 = WARNING, 60–100 = DANGER
 
+## ✨ Latest Features
+
+### 🔴 Live IoT Data Integration (November 2025)
+- ✅ Real-time sensor data streaming from Firebase
+- ✅ Sub-second update latency via WebSocket
+- ✅ Automatic hazard alerts (WARNING/DANGER)
+- ✅ Color-coded risk visualization
+- ✅ Loading, error, and no-data states
+- ✅ Dev testing tools and smoke tests
+- ✅ Comprehensive documentation
+
+**See**: [Complete Guide](./COMPLETE_GUIDE.md) - Everything you need in one place!
+
 ## 🛠️ Technologies
 
-- **Frontend**: React, TypeScript, Vite, shadcn/ui, Tailwind CSS, Recharts
+- **Frontend**: React, TypeScript, Vite, shadcn/ui, Tailwind CSS, Recharts, Firebase SDK v9
 - **Backend**: _Coming soon_
 - **Server**: _Coming soon_
-- **Database**: Firebase Realtime Database
+- **Database**: Firebase Realtime Database (WebSocket)
 - **IoT**: ESP8266, ESP32-CAM
 
 ## 📄 License

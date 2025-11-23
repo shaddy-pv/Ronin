@@ -3,18 +3,27 @@ import { IoTReadings, RoverControl, RoverStatus, Alert, HistoryLog } from './fir
 // Generate realistic mock IoT readings
 export const generateMockIoTReadings = (): IoTReadings => {
     const baseHazard = Math.random() * 100;
+    const riskLevel: 'SAFE' | 'WARNING' | 'DANGER' = 
+        baseHazard < 30 ? 'SAFE' : baseHazard < 60 ? 'WARNING' : 'DANGER';
 
     return {
         mq2: Math.floor(200 + Math.random() * 600), // 200-800 range
         mq135: Math.floor(300 + Math.random() * 700), // 300-1000 range
+        mq135_raw: Math.random() > 0.5 ? 1 : 0,
+        mq135_digital: Math.random() > 0.5 ? 1 : 0,
         temperature: Math.floor(20 + Math.random() * 15), // 20-35°C
         humidity: Math.floor(40 + Math.random() * 40), // 40-80%
         flame: Math.random() > 0.95, // 5% chance of flame detection
         motion: Math.random() > 0.7, // 30% chance of motion
         hazardScore: Math.floor(baseHazard),
+        riskLevel,
         status: {
             online: true,
             lastHeartbeat: Date.now()
+        },
+        emergency: {
+            active: false,
+            timestamp: 0
         }
     };
 };

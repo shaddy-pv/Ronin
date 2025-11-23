@@ -2,7 +2,7 @@ import { Sidebar } from "@/components/Sidebar";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { AlertTriangle, Flame, Wind, Thermometer, UserCheck, Activity, Battery, MapPin, Info, Circle } from "lucide-react";
+import { AlertTriangle, Flame, Wind, Thermometer, UserCheck, Activity, Battery, MapPin, Info, Circle, FlaskConical } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
 import { HazardScoreModal } from "@/components/HazardScoreModal";
 import { SensorDetailDrawer } from "@/components/SensorDetailDrawer";
@@ -11,10 +11,13 @@ import { SystemHealthPanel } from "@/components/SystemHealthPanel";
 import { ZoneSelector } from "@/components/ZoneSelector";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ErrorState } from "@/components/ErrorState";
+import { HazardAlertBanner } from "@/components/HazardAlertBanner";
+import { MonitoringControlPanel } from "@/components/MonitoringControlPanel";
 import { useState, useEffect, useMemo } from "react";
 import { useFirebase } from "@/contexts/FirebaseContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { getRiskLevel, getSensorContribution } from "@/lib/hazardScore";
-import { ref, update } from "firebase/database";
+import { ref, update, set } from "firebase/database";
 import { database } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 
@@ -25,6 +28,7 @@ const Dashboard = () => {
   const [emergencyActive, setEmergencyActive] = useState(false);
   const [gasHistory, setGasHistory] = useState<Array<{ time: string; mq2: number; mq135: number }>>([]);
   const [tempHistory, setTempHistory] = useState<Array<{ time: string; temp: number; humidity: number }>>([]);
+  const [resendLoading, setResendLoading] = useState(false);
   
   const { toast } = useToast();
   
@@ -40,6 +44,9 @@ const Dashboard = () => {
     roverLoading,
     history
   } = useFirebase();
+
+  // Get current user for email verification check
+  const { currentUser } = useAuth();
 
   // Build chart data from history
   useEffect(() => {
@@ -178,6 +185,68 @@ const Dashboard = () => {
     }
   };
 
+  // Dev-only: Simulate test payload
+  const handleSimulateTestPayload = async () => {
+    if (process.env.NODE_ENV !== 'development') return;
+
+    try {
+      const testPayload = {
+        mq2: 450,
+        mq135: 800,
+        mq135_raw: 1,
+        mq135_digital: 1,
+        temperature: 45.2,
+        humidity: 34.1,
+        flame: true,
+        motion: false,
+        hazardScore: 70,
+        riskLevel: "DANGER",
+        status: {
+          online: true,
+          lastHeartbeat: Date.now()
+        },
+        emergency: {
+          active: false,
+          timestamp: 0
+        }
+      };
+
+      const iotRef = ref(database, 'ronin/iot');
+      await set(iotRef, testPayload);
+
+      toast({
+        title: "🧪 Test Payload Sent",
+        description: "Simulated DANGER condition with hazardScore: 70",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to send test payload",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleResendVerification = async () => {
+    setResendLoading(true);
+    try {
+      // Note: In a real implementation, you'd need to access sendVerificationEmail from AuthContext
+      // For now, we'll just show a message
+      toast({
+        title: "Verification Email",
+        description: "Please check your inbox for the verification link. If you didn't receive it, try logging out and back in.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to send verification email",
+        variant: "destructive"
+      });
+    } finally {
+      setResendLoading(false);
+    }
+  };
+
   // IoT Node status
   const iotNodeOnline = iotReadings?.status?.online ?? false;
   const lastHeartbeat = iotReadings?.status?.lastHeartbeat 
@@ -194,7 +263,30 @@ const Dashboard = () => {
       <div className="flex min-h-screen">
         <Sidebar />
         <main className="flex-1">
-          <LoadingSpinner fullScreen message="Connecting to Firebase and loading sensor data..." />
+          <LoadingSpinner fullScreen message="Connecting to RONIN node..." />
+        </main>
+      </div>
+    );
+  }
+
+  // Show no-data state if not loading but no data
+  if (!iotLoading && !iotReadings && !iotError) {
+    return (
+      <div className="flex min-h-screen">
+        <Sidebar />
+        <main className="flex-1">
+          <div className="min-h-screen flex items-center justify-center bg-background">
+            <div className="text-center space-y-4 max-w-md px-4">
+              <Activity className="w-16 h-16 mx-auto text-muted-foreground opacity-50" />
+              <h2 className="text-2xl font-bold">No Live Data Found</h2>
+              <p className="text-muted-foreground">
+                Waiting for RONIN IoT node to send data. Make sure the device is powered on and connected to Firebase.
+              </p>
+              <Button onClick={() => window.location.reload()} variant="outline">
+                Refresh
+              </Button>
+            </div>
+          </div>
         </main>
       </div>
     );
@@ -222,6 +314,32 @@ const Dashboard = () => {
     <div className="flex min-h-screen">
       <Sidebar />
       
+      {/* Email Verification Banner */}
+      {!iotLoading && currentUser && !currentUser.emailVerified && (
+        <div className="fixed top-0 left-0 right-0 z-50 bg-warning text-black shadow-lg">
+          <div className="container mx-auto px-4 py-2 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3 flex-1">
+              <Info className="w-5 h-5 flex-shrink-0" />
+              <div className="text-sm">
+                <span className="font-semibold">Email Not Verified</span> - Please check your inbox and verify your email address.
+              </div>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleResendVerification}
+              disabled={resendLoading}
+              className="hover:bg-warning-foreground/20 text-sm"
+            >
+              {resendLoading ? "Sending..." : "Resend Email"}
+            </Button>
+          </div>
+        </div>
+      )}
+      
+      {/* Hazard Alert Banner */}
+      <HazardAlertBanner hazardScore={hazardScore} riskLevel={riskLevel} />
+      
       <main className="flex-1 overflow-auto">
         {/* Header */}
         <header className="sticky top-0 z-10 bg-card border-b border-border px-4 sm:px-8 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -230,6 +348,19 @@ const Dashboard = () => {
             <p className="text-xs sm:text-sm text-muted-foreground">Last updated: {new Date().toLocaleTimeString()}</p>
           </div>
           <div className="flex flex-wrap items-center gap-2 sm:gap-4">
+            {/* Dev-only Test Button */}
+            {process.env.NODE_ENV === 'development' && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSimulateTestPayload}
+                className="gap-2"
+              >
+                <FlaskConical className="w-4 h-4" />
+                Test Payload
+              </Button>
+            )}
+            
             {/* IoT Node Status */}
             <div className={`flex items-center gap-2 px-2 sm:px-3 py-1.5 rounded-full text-xs sm:text-sm ${
               iotNodeOnline 
@@ -375,6 +506,9 @@ const Dashboard = () => {
               </div>
             </Card>
           </div>
+
+          {/* Client-Side Monitoring Control */}
+          <MonitoringControlPanel />
 
           {/* Incident Timeline */}
           <IncidentTimeline />

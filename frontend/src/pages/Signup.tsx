@@ -9,7 +9,7 @@ import { Loader2 } from "lucide-react";
 
 const Signup = () => {
   const navigate = useNavigate();
-  const { signup, currentUser } = useAuth();
+  const { signup, currentUser, sendVerificationEmail } = useAuth();
   const { toast } = useToast();
   const [formData, setFormData] = useState({
     fullName: "",
@@ -57,10 +57,24 @@ const Signup = () => {
     setLoading(true);
     try {
       await signup(formData.email, formData.password);
-      toast({
-        title: "Account Created",
-        description: `Welcome to RONIN, ${formData.email}!`
-      });
+      
+      // Send verification email
+      try {
+        await sendVerificationEmail();
+        toast({
+          title: "Account Created",
+          description: `Welcome to RONIN! A verification email has been sent to ${formData.email}. Please verify your email to access all features.`,
+          duration: 8000
+        });
+      } catch (verifyError) {
+        console.error("Verification email error:", verifyError);
+        toast({
+          title: "Account Created",
+          description: `Welcome to RONIN, ${formData.email}! Note: Verification email could not be sent.`,
+          variant: "default"
+        });
+      }
+      
       navigate("/dashboard");
     } catch (error: any) {
       console.error("Signup error:", error);

@@ -1,18 +1,25 @@
 import { database } from './firebase';
 import { ref, onValue, set, update, push, off } from 'firebase/database';
 
-// Types based on RONIN Firebase structure
+// Types based on RONIN Firebase structure (matching firmware schema)
 export interface IoTReadings {
   mq2: number;
   mq135: number;
+  mq135_raw: 0 | 1;
+  mq135_digital: 0 | 1;
   temperature: number;
   humidity: number;
   flame: boolean;
   motion: boolean;
   hazardScore: number;
+  riskLevel: 'SAFE' | 'WARNING' | 'DANGER';
   status: {
     online: boolean;
     lastHeartbeat: number;
+  };
+  emergency: {
+    active: boolean;
+    timestamp: number;
   };
 }
 
