@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Mail, CheckCircle } from "lucide-react";
-import { getAuth, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink } from "firebase/auth";
+import { getAuth, sendEmailVerification } from "firebase/auth";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -20,83 +20,13 @@ const Signup = () => {
     confirmPassword: "",
   });
   const [loading, setLoading] = useState(false);
-  const [emailVerified, setEmailVerified] = useState(false);
 
   // Redirect if already logged in
   if (currentUser) {
     navigate("/dashboard");
   }
 
-  // Check if user is coming back from email verification link
-  useEffect(() => {
-    const auth = getAuth();
-    
-    if (isSignInWithEmailLink(auth, window.location.href)) {
-      // User clicked verification link
-      let email = window.localStorage.getItem('emailForSignIn');
-      
-      if (!email) {
-        // Ask user for email if not found
-        email = window.prompt('Please provide your email for confirmation');
-      }
-      
-      if (email) {
-        setLoading(true);
-        signInWithEmailLink(auth, email, window.location.href)
-          .then(() => {
-            // Email verified successfully
-            window.localStorage.removeItem('emailForSignIn');
-            setEmailVerified(true);
-            
-            // Get stored form data
-            const storedData = localStorage.getItem('signupFormData');
-            if (storedData) {
-              const data = JSON.parse(storedData);
-              setFormData(data);
-              setStep('complete');
-              
-              toast({
-                title: "✅ Email Verified!",
-                description: "Creating your account now...",
-              });
-              
-              // Create account
-              signup(data.email, data.password)
-                .then(() => {
-                  localStorage.removeItem('signupFormData');
-                  toast({
-                    title: "🎉 Account Created!",
-                    description: `Welcome to RONIN, ${data.email}!`,
-                  });
-                  setTimeout(() => navigate("/dashboard"), 2000);
-                })
-                .catch((error) => {
-                  toast({
-                    title: "Signup Failed",
-                    description: error.message,
-                    variant: "destructive"
-                  });
-                  setStep('form');
-                });
-            }
-          })
-          .catch((error) => {
-            console.error("Email verification error:", error);
-            toast({
-              title: "Verification Failed",
-              description: "Invalid or expired link. Please try again.",
-              variant: "destructive"
-            });
-            setStep('form');
-          })
-          .finally(() => {
-            setLoading(false);
-          });
-      }
-    }
-  }, [signup, navigate, toast]);
-
-  const handleSendVerificationLink = async (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.email || !formData.password || !formData.fullName) {
@@ -128,38 +58,35 @@ const Signup = () => {
 
     setLoading(true);
     try {
-      const auth = getAuth();
-      const actionCodeSettings = {
-        url: window.location.origin + '/signup',
-        handleCodeInApp: true,
-      };
-
-      // Send verification email link
-      await sendSignInLinkToEmail(auth, formData.email, actionCodeSettings);
+      // Create account first
+      const userCredential = await signup(formData.email, formData.password);
       
-      // Store email and form data for later
-      window.localStorage.setItem('emailForSignIn', formData.email);
-      localStorage.setItem('signupFormData', JSON.stringify(formData));
-
-      setStep('verify');
-      
-      toast({
-        title: "📧 Verification Email Sent!",
-        description: `Please check your email at ${formData.email} and click the verification link.`,
-        duration: 10000
-      });
+      // Send verification email
+      if (userCredential.user) {
+        await sendEmailVerification(userCredential.user);
+        
+        setStep('verify');
+        
+        toast({
+          title: "📧 Verification Email Sent!",
+          description: `Please check your email at ${formData.email} and verify your account.`,
+          duration: 10000
+        });
+      }
     } catch (error: any) {
-      console.error("Error sending verification:", error);
-      let errorMessage = "Failed to send verification email.";
+      console.error("Error during signup:", error);
+      let errorMessage = "Failed to create account.";
       
-      if (error.code === "auth/invalid-email") {
+      if (error.code === "auth/email-already-in-use") {
+        errorMessage = "Email already in use.";
+      } else if (error.code === "auth/invalid-email") {
         errorMessage = "Invalid email address.";
-      } else if (error.code === "auth/too-many-requests") {
-        errorMessage = "Too many requests. Please try again later.";
+      } else if (error.code === "auth/weak-password") {
+        errorMessage = "Password is too weak.";
       }
       
       toast({
-        title: "Failed to Send Email",
+        title: "Signup Failed",
         description: errorMessage,
         variant: "destructive"
       });
@@ -169,15 +96,11 @@ const Signup = () => {
   };
 
   const handleResendVerification = async () => {
+    if (!currentUser) return;
+    
     setLoading(true);
     try {
-      const auth = getAuth();
-      const actionCodeSettings = {
-        url: window.location.origin + '/signup',
-        handleCodeInApp: true,
-      };
-
-      await sendSignInLinkToEmail(auth, formData.email, actionCodeSettings);
+      await sendEmailVerification(currentUser);
       
       toast({
         title: "✅ Email Resent!",
@@ -209,7 +132,7 @@ const Signup = () => {
               <p className="text-muted-foreground">Join RONIN Command Center</p>
             </div>
 
-            <form onSubmit={handleSendVerificationLink} className="space-y-6">
+            <form onSubmit={handleSignup} className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="fullName">Full Name</Label>
             <Input
@@ -262,13 +185,10 @@ const Signup = () => {
             {loading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Sending Verification Email...
+                Creating Account...
               </>
             ) : (
-              <>
-                <Mail className="mr-2 h-4 w-4" />
-                Send Verification Email
-              </>
+              "Create Account"
             )}
           </Button>
         </form>
@@ -306,8 +226,8 @@ const Signup = () => {
 
               <div className="p-4 bg-muted/50 rounded-lg text-sm text-muted-foreground space-y-2">
                 <p>📧 <strong>Check your spam folder</strong> if you don't see the email</p>
-                <p>⏱️ The link expires in 1 hour</p>
-                <p>🔄 After clicking the link, your account will be created automatically</p>
+                <p>✅ Click the verification link to activate your account</p>
+                <p>🔄 You can login after verifying your email</p>
               </div>
 
               <Button 
@@ -327,18 +247,9 @@ const Signup = () => {
               </Button>
 
               <p className="text-center text-sm text-muted-foreground mt-4">
-                Wrong email?{" "}
-                <button 
-                  type="button"
-                  onClick={() => {
-                    setStep('form');
-                    localStorage.removeItem('emailForSignIn');
-                    localStorage.removeItem('signupFormData');
-                  }}
-                  className="text-primary hover:underline"
-                >
-                  Go back
-                </button>
+                <Link to="/login" className="text-primary hover:underline">
+                  Go to Login
+                </Link>
               </p>
             </div>
           </>
