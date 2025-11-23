@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Mail, CheckCircle, Shield } from "lucide-react";
+import { Loader2, Mail, CheckCircle } from "lucide-react";
 import { getAuth, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink } from "firebase/auth";
 
 const Signup = () => {
@@ -20,68 +20,86 @@ const Signup = () => {
     confirmPassword: "",
   });
   const [loading, setLoading] = useState(false);
-  const [verificationCode, setVerificationCode] = useState("");
-  const [generatedCode, setGeneratedCode] = useState("");
-  const [codeExpiry, setCodeExpiry] = useState(0);
+  const [emailVerified, setEmailVerified] = useState(false);
 
   // Redirect if already logged in
   if (currentUser) {
     navigate("/dashboard");
   }
 
-  // Generate 6-digit verification code
-  const generateVerificationCode = () => {
-    return Math.floor(100000 + Math.random() * 900000).toString();
-  };
-
-  // Send verification code via email
-  const sendVerificationCode = async () => {
-    const code = generateVerificationCode();
-    setGeneratedCode(code);
-    setCodeExpiry(Date.now() + 10 * 60 * 1000); // 10 minutes expiry
-
-    // Store in localStorage temporarily
-    localStorage.setItem('verificationCode', code);
-    localStorage.setItem('verificationEmail', formData.email);
-    localStorage.setItem('codeExpiry', codeExpiry.toString());
-
-    // Send email using Firebase Auth email link
+  // Check if user is coming back from email verification link
+  useEffect(() => {
     const auth = getAuth();
-    const actionCodeSettings = {
-      url: window.location.origin + '/signup',
-      handleCodeInApp: false,
-    };
-
-    try {
-      // We'll use a workaround: send password reset email with the code in the message
-      // This is a limitation - Firebase doesn't support custom OTP emails without Cloud Functions
+    
+    if (isSignInWithEmailLink(auth, window.location.href)) {
+      // User clicked verification link
+      let email = window.localStorage.getItem('emailForSignIn');
       
-      toast({
-        title: "📧 Verification Code Sent!",
-        description: `We've sent a 6-digit code to ${formData.email}. Please check your email (and spam folder).`,
-        duration: 8000
-      });
-
-      // For now, show the code in console for testing (remove in production)
-      console.log("Verification Code:", code);
+      if (!email) {
+        // Ask user for email if not found
+        email = window.prompt('Please provide your email for confirmation');
+      }
       
-      // Show code in toast for testing (remove in production)
-      toast({
-        title: "🔐 Verification Code (Testing)",
-        description: `Your code is: ${code}`,
-        duration: 15000
-      });
-
-    } catch (error) {
-      console.error("Error sending code:", error);
-      throw error;
+      if (email) {
+        setLoading(true);
+        signInWithEmailLink(auth, email, window.location.href)
+          .then(() => {
+            // Email verified successfully
+            window.localStorage.removeItem('emailForSignIn');
+            setEmailVerified(true);
+            
+            // Get stored form data
+            const storedData = localStorage.getItem('signupFormData');
+            if (storedData) {
+              const data = JSON.parse(storedData);
+              setFormData(data);
+              setStep('complete');
+              
+              toast({
+                title: "✅ Email Verified!",
+                description: "Creating your account now...",
+              });
+              
+              // Create account
+              signup(data.email, data.password)
+                .then(() => {
+                  localStorage.removeItem('signupFormData');
+                  toast({
+                    title: "🎉 Account Created!",
+                    description: `Welcome to RONIN, ${data.email}!`,
+                  });
+                  setTimeout(() => navigate("/dashboard"), 2000);
+                })
+                .catch((error) => {
+                  toast({
+                    title: "Signup Failed",
+                    description: error.message,
+                    variant: "destructive"
+                  });
+                  setStep('form');
+                });
+            }
+          })
+          .catch((error) => {
+            console.error("Email verification error:", error);
+            toast({
+              title: "Verification Failed",
+              description: "Invalid or expired link. Please try again.",
+              variant: "destructive"
+            });
+            setStep('form');
+          })
+          .finally(() => {
+            setLoading(false);
+          });
+      }
     }
-  };
+  }, [signup, navigate, toast]);
 
-  const handleSendCode = async (e: React.FormEvent) => {
+  const handleSendVerificationLink = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.email || !formData.password) {
+    if (!formData.email || !formData.password || !formData.fullName) {
       toast({
         title: "Missing Information",
         description: "Please fill in all required fields",
@@ -110,87 +128,38 @@ const Signup = () => {
 
     setLoading(true);
     try {
-      await sendVerificationCode();
+      const auth = getAuth();
+      const actionCodeSettings = {
+        url: window.location.origin + '/signup',
+        handleCodeInApp: true,
+      };
+
+      // Send verification email link
+      await sendSignInLinkToEmail(auth, formData.email, actionCodeSettings);
+      
+      // Store email and form data for later
+      window.localStorage.setItem('emailForSignIn', formData.email);
+      localStorage.setItem('signupFormData', JSON.stringify(formData));
+
       setStep('verify');
+      
+      toast({
+        title: "📧 Verification Email Sent!",
+        description: `Please check your email at ${formData.email} and click the verification link.`,
+        duration: 10000
+      });
     } catch (error: any) {
-      toast({
-        title: "Failed to Send Code",
-        description: "Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleVerifyCode = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!verificationCode || verificationCode.length !== 6) {
-      toast({
-        title: "Invalid Code",
-        description: "Please enter the 6-digit code",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    // Check if code expired
-    if (Date.now() > codeExpiry) {
-      toast({
-        title: "Code Expired",
-        description: "Please request a new code",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    // Verify code
-    if (verificationCode !== generatedCode) {
-      toast({
-        title: "Invalid Code",
-        description: "The code you entered is incorrect",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    // Code is valid, create account
-    setLoading(true);
-    try {
-      await signup(formData.email, formData.password);
+      console.error("Error sending verification:", error);
+      let errorMessage = "Failed to send verification email.";
       
-      // Clear stored code
-      localStorage.removeItem('verificationCode');
-      localStorage.removeItem('verificationEmail');
-      localStorage.removeItem('codeExpiry');
-
-      toast({
-        title: "✅ Account Created!",
-        description: `Welcome to RONIN, ${formData.email}!`,
-      });
-
-      setStep('complete');
-      
-      // Redirect to dashboard after 2 seconds
-      setTimeout(() => {
-        navigate("/dashboard");
-      }, 2000);
-      
-    } catch (error: any) {
-      console.error("Signup error:", error);
-      let errorMessage = "Failed to create account. Please try again.";
-      
-      if (error.code === "auth/email-already-in-use") {
-        errorMessage = "An account with this email already exists.";
-      } else if (error.code === "auth/invalid-email") {
+      if (error.code === "auth/invalid-email") {
         errorMessage = "Invalid email address.";
-      } else if (error.code === "auth/weak-password") {
-        errorMessage = "Password is too weak. Use at least 6 characters.";
+      } else if (error.code === "auth/too-many-requests") {
+        errorMessage = "Too many requests. Please try again later.";
       }
       
       toast({
-        title: "Signup Failed",
+        title: "Failed to Send Email",
         description: errorMessage,
         variant: "destructive"
       });
@@ -199,12 +168,19 @@ const Signup = () => {
     }
   };
 
-  const handleResendCode = async () => {
+  const handleResendVerification = async () => {
     setLoading(true);
     try {
-      await sendVerificationCode();
+      const auth = getAuth();
+      const actionCodeSettings = {
+        url: window.location.origin + '/signup',
+        handleCodeInApp: true,
+      };
+
+      await sendSignInLinkToEmail(auth, formData.email, actionCodeSettings);
+      
       toast({
-        title: "✅ Code Resent!",
+        title: "✅ Email Resent!",
         description: `Check your email at ${formData.email}`,
       });
     } catch (error: any) {
@@ -233,7 +209,7 @@ const Signup = () => {
               <p className="text-muted-foreground">Join RONIN Command Center</p>
             </div>
 
-            <form onSubmit={handleSendCode} className="space-y-6">
+            <form onSubmit={handleSendVerificationLink} className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="fullName">Full Name</Label>
             <Input
@@ -286,12 +262,12 @@ const Signup = () => {
             {loading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Sending Code...
+                Sending Verification Email...
               </>
             ) : (
               <>
-                <Shield className="mr-2 h-4 w-4" />
-                Send Verification Code
+                <Mail className="mr-2 h-4 w-4" />
+                Send Verification Email
               </>
             )}
           </Button>
@@ -308,78 +284,63 @@ const Signup = () => {
           <>
             <div className="mb-8 text-center">
               <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                <Mail className="w-8 h-8 text-primary" />
+                <Mail className="w-8 h-8 text-primary animate-pulse" />
               </div>
-              <h1 className="text-3xl font-bold mb-2">Enter Verification Code</h1>
-              <p className="text-muted-foreground">We've sent a 6-digit code to</p>
+              <h1 className="text-3xl font-bold mb-2">Verify Your Email</h1>
+              <p className="text-muted-foreground">We've sent a verification link to</p>
               <p className="text-primary font-semibold mt-1">{formData.email}</p>
             </div>
 
-            <form onSubmit={handleVerifyCode} className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="code">Verification Code</Label>
-                <Input
-                  id="code"
-                  type="text"
-                  value={verificationCode}
-                  onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                  placeholder="000000"
-                  maxLength={6}
-                  className="text-center text-2xl tracking-widest font-mono"
-                  required
-                  autoFocus
-                />
-                <p className="text-xs text-muted-foreground text-center">
-                  Enter the 6-digit code from your email
-                </p>
+            <div className="space-y-4">
+              <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
+                <div className="flex items-start gap-3">
+                  <CheckCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                  <div className="text-sm">
+                    <p className="font-semibold mb-1">Click the link in your email</p>
+                    <p className="text-muted-foreground">
+                      Open the email we sent to {formData.email} and click the verification link. You'll be redirected back here to complete signup.
+                    </p>
+                  </div>
+                </div>
               </div>
 
-              <div className="p-4 bg-muted/50 rounded-lg text-sm text-muted-foreground">
-                <p className="mb-2">📧 <strong>Check your spam folder</strong> if you don't see the email</p>
-                <p>⏱️ Code expires in 10 minutes</p>
+              <div className="p-4 bg-muted/50 rounded-lg text-sm text-muted-foreground space-y-2">
+                <p>📧 <strong>Check your spam folder</strong> if you don't see the email</p>
+                <p>⏱️ The link expires in 1 hour</p>
+                <p>🔄 After clicking the link, your account will be created automatically</p>
               </div>
 
-              <Button type="submit" className="w-full" disabled={loading || verificationCode.length !== 6}>
+              <Button 
+                onClick={handleResendVerification}
+                variant="outline"
+                disabled={loading}
+                className="w-full"
+              >
                 {loading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Verifying...
+                    Sending...
                   </>
                 ) : (
-                  "Verify & Create Account"
+                  "Resend Verification Email"
                 )}
               </Button>
-
-              <div className="flex flex-col gap-2">
-                <Button 
-                  type="button"
-                  onClick={handleResendCode}
-                  variant="outline"
-                  disabled={loading}
-                  className="w-full"
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Sending...
-                    </>
-                  ) : (
-                    "Resend Code"
-                  )}
-                </Button>
-              </div>
 
               <p className="text-center text-sm text-muted-foreground mt-4">
                 Wrong email?{" "}
                 <button 
                   type="button"
-                  onClick={() => setStep('form')}
+                  onClick={() => {
+                    setStep('form');
+                    localStorage.removeItem('emailForSignIn');
+                    localStorage.removeItem('signupFormData');
+                  }}
                   className="text-primary hover:underline"
                 >
                   Go back
                 </button>
               </p>
-            </form>
+            </div>
           </>
         ) : (
           <>
