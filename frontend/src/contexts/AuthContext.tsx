@@ -67,13 +67,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const user = auth.currentUser;
     
     if (user) {
-      // Configure action code settings for better email delivery
-      const actionCodeSettings = {
-        url: window.location.origin + '/dashboard',
-        handleCodeInApp: false,
-      };
-      
-      await sendEmailVerification(user, actionCodeSettings);
+      // Send without actionCodeSettings - simpler and more reliable
+      // Firebase will use default settings which work better
+      await sendEmailVerification(user);
     } else {
       throw new Error('No user is currently logged in');
     }

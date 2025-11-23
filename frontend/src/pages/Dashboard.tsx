@@ -29,9 +29,9 @@ const Dashboard = () => {
   const [gasHistory, setGasHistory] = useState<Array<{ time: string; mq2: number; mq135: number }>>([]);
   const [tempHistory, setTempHistory] = useState<Array<{ time: string; temp: number; humidity: number }>>([]);
   const [resendLoading, setResendLoading] = useState(false);
-  
+
   const { toast } = useToast();
-  
+
   // Get Firebase data
   const {
     iotReadings,
@@ -52,19 +52,19 @@ const Dashboard = () => {
   useEffect(() => {
     if (history && history.length > 0) {
       const last10 = history.slice(0, 10).reverse();
-      
+
       const gasData = last10.map(log => ({
         time: new Date(log.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
         mq2: log.mq2,
         mq135: log.mq135
       }));
-      
+
       const tempData = last10.map(log => ({
         time: new Date(log.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
         temp: log.temperature,
         humidity: 0 // History doesn't have humidity, use current reading
       }));
-      
+
       setGasHistory(gasData);
       setTempHistory(tempData);
     }
@@ -74,12 +74,12 @@ const Dashboard = () => {
   useEffect(() => {
     if (iotReadings) {
       const currentTime = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-      
+
       setGasHistory(prev => {
         const updated = [...prev, { time: currentTime, mq2: iotReadings.mq2, mq135: iotReadings.mq135 }];
         return updated.slice(-10); // Keep last 10
       });
-      
+
       setTempHistory(prev => {
         const updated = [...prev, { time: currentTime, temp: iotReadings.temperature, humidity: iotReadings.humidity }];
         return updated.slice(-10);
@@ -170,7 +170,7 @@ const Dashboard = () => {
       const emergencyRef = ref(database, 'ronin/iot/emergency');
       await update(emergencyRef, { active: true, timestamp: Date.now() });
       setEmergencyActive(true);
-      
+
       toast({
         title: "🚨 Emergency Mode Activated",
         description: "All safety protocols have been triggered.",
@@ -249,8 +249,8 @@ const Dashboard = () => {
 
   // IoT Node status
   const iotNodeOnline = iotReadings?.status?.online ?? false;
-  const lastHeartbeat = iotReadings?.status?.lastHeartbeat 
-    ? new Date(iotReadings.status.lastHeartbeat).toLocaleTimeString() 
+  const lastHeartbeat = iotReadings?.status?.lastHeartbeat
+    ? new Date(iotReadings.status.lastHeartbeat).toLocaleTimeString()
     : 'Never';
 
   // Rover mode and status
@@ -292,28 +292,14 @@ const Dashboard = () => {
     );
   }
 
-  // Show error state if Firebase connection fails
-  if (iotError && !iotReadings) {
-    return (
-      <div className="flex min-h-screen">
-        <Sidebar />
-        <main className="flex-1">
-          <ErrorState 
-            fullScreen
-            type="database"
-            title="Unable to Connect to Firebase"
-            message="Check your internet connection and Firebase configuration. The app will continue to retry in the background."
-            onRetry={() => window.location.reload()}
-          />
-        </main>
-      </div>
-    );
-  }
+  // Don't show full-screen error - the FirebaseConnectionStatus component handles this
+  // Just continue to render the dashboard even if there's an error
+  // This prevents the error screen from showing unnecessarily
 
   return (
     <div className="flex min-h-screen">
       <Sidebar />
-      
+
       {/* Email Verification Banner */}
       {!iotLoading && currentUser && !currentUser.emailVerified && (
         <div className="fixed top-0 left-0 right-0 z-50 bg-warning text-black shadow-lg">
@@ -336,10 +322,10 @@ const Dashboard = () => {
           </div>
         </div>
       )}
-      
+
       {/* Hazard Alert Banner */}
       <HazardAlertBanner hazardScore={hazardScore} riskLevel={riskLevel} />
-      
+
       <main className="flex-1 overflow-auto">
         {/* Header */}
         <header className="sticky top-0 z-10 bg-card border-b border-border px-4 sm:px-8 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -360,13 +346,12 @@ const Dashboard = () => {
                 Test Payload
               </Button>
             )}
-            
+
             {/* IoT Node Status */}
-            <div className={`flex items-center gap-2 px-2 sm:px-3 py-1.5 rounded-full text-xs sm:text-sm ${
-              iotNodeOnline 
-                ? 'bg-safe/10 border border-safe/20' 
-                : 'bg-danger/10 border border-danger/20'
-            }`}>
+            <div className={`flex items-center gap-2 px-2 sm:px-3 py-1.5 rounded-full text-xs sm:text-sm ${iotNodeOnline
+              ? 'bg-safe/10 border border-safe/20'
+              : 'bg-danger/10 border border-danger/20'
+              }`}>
               <Circle className={`w-2 h-2 rounded-full ${iotNodeOnline ? 'bg-safe' : 'bg-danger'}`} />
               <span className={`font-semibold ${iotNodeOnline ? 'text-safe' : 'text-danger'}`}>
                 IoT: {iotNodeOnline ? 'ONLINE' : 'OFFLINE'}
@@ -403,10 +388,9 @@ const Dashboard = () => {
                   {riskLevel === 'DANGER' && '🚨 CRITICAL: Hazardous conditions detected! Take immediate action.'}
                 </p>
               </div>
-              <Activity className={`hidden sm:block w-16 sm:w-24 h-16 sm:h-24 opacity-20 ${
-                riskLevel === 'SAFE' ? 'text-safe' : 
+              <Activity className={`hidden sm:block w-16 sm:w-24 h-16 sm:h-24 opacity-20 ${riskLevel === 'SAFE' ? 'text-safe' :
                 riskLevel === 'WARNING' ? 'text-warning' : 'text-danger'
-              }`} />
+                }`} />
             </div>
           </Card>
 
@@ -534,8 +518,8 @@ const Dashboard = () => {
                   Activate emergency protocols to maximize ventilation and trigger all safety systems.
                 </p>
               )}
-              <Button 
-                variant="destructive" 
+              <Button
+                variant="destructive"
                 className="w-full"
                 onClick={handleEmergencyActivation}
                 disabled={emergencyActive}
@@ -566,9 +550,8 @@ const Dashboard = () => {
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">Status</span>
-                  <div className={`px-2 py-1 rounded text-xs font-semibold ${
-                    roverOnline ? 'bg-safe/10 text-safe' : 'bg-danger/10 text-danger'
-                  }`}>
+                  <div className={`px-2 py-1 rounded text-xs font-semibold ${roverOnline ? 'bg-safe/10 text-safe' : 'bg-danger/10 text-danger'
+                    }`}>
                     {roverOnline ? 'ONLINE' : 'OFFLINE'}
                   </div>
                 </div>
@@ -595,7 +578,7 @@ const Dashboard = () => {
                   <span className="font-semibold capitalize">{roverControl?.direction || 'stop'}</span>
                 </div>
               </div>
-              
+
               {/* Auto Dispatch Warning */}
               {roverMode === "auto" && riskLevel === 'DANGER' && (
                 <div className="mt-4 p-3 bg-danger/10 border border-danger/20 rounded-lg">
@@ -621,8 +604,8 @@ const Dashboard = () => {
 
       {/* Modals and Drawers */}
       <HazardScoreModal open={hazardScoreModalOpen} onOpenChange={setHazardScoreModalOpen} />
-      <SensorDetailDrawer 
-        open={sensorDrawerOpen} 
+      <SensorDetailDrawer
+        open={sensorDrawerOpen}
         onOpenChange={setSensorDrawerOpen}
         sensorType={selectedSensor}
       />
