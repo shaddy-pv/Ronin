@@ -18,6 +18,7 @@ import {
 } from '@/lib/firebaseService';
 import { useIoTReadings } from '@/hooks/useIoTReadings';
 import { useHazardScore } from '@/hooks/useHazardScore';
+import { useCalculatedHazardScore, HazardScoreComparison } from '@/hooks/useCalculatedHazardScore';
 import { useRover } from '@/hooks/useRover';
 import { useAlerts } from '@/hooks/useAlerts';
 import { useHistory } from '@/hooks/useHistory';
@@ -28,11 +29,17 @@ interface FirebaseContextType {
   iotLoading: boolean;
   iotError: Error | null;
 
-  // Hazard Score
+  // Hazard Score (Device-reported)
   hazardScore: number;
   riskLevel: 'SAFE' | 'WARNING' | 'DANGER';
   hazardLoading: boolean;
   hazardError: Error | null;
+
+  // Calculated Hazard Score (Mathematical Model)
+  calculatedHazardScore: number;
+  calculatedRiskLevel: 'SAFE' | 'WARNING' | 'DANGER';
+  hazardComparison: HazardScoreComparison | null;
+  divergenceThreshold: number;
 
   // Rover
   roverControl: RoverControl | null;
@@ -69,6 +76,7 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
   // Use all hooks
   const { data: iotReadings, loading: iotLoading, error: iotError } = useIoTReadings();
   const { hazardScore, riskLevel, loading: hazardLoading, error: hazardError } = useHazardScore();
+  const { comparison: hazardComparison, calculatedScore, divergenceThreshold } = useCalculatedHazardScore();
   const { 
     control: roverControl, 
     status: roverStatus, 
@@ -90,11 +98,17 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
     iotLoading,
     iotError,
 
-    // Hazard Score
+    // Hazard Score (Device-reported)
     hazardScore,
     riskLevel,
     hazardLoading,
     hazardError,
+
+    // Calculated Hazard Score (Mathematical Model)
+    calculatedHazardScore: calculatedScore,
+    calculatedRiskLevel: hazardComparison?.calculatedRiskLevel || 'SAFE',
+    hazardComparison,
+    divergenceThreshold,
 
     // Rover
     roverControl,

@@ -403,6 +403,9 @@ class ClientMonitoringService {
       if (roverBehavior && roverBehavior.autoDispatchEnabled) {
         console.log('[ClientMonitoring] Auto-dispatch enabled, sending rover...');
 
+        const dispatchTime = Date.now();
+
+        // Set rover control to auto mode
         await set(ref(database, 'ronin/rover/control'), {
           mode: 'auto',
           direction: 'forward',
@@ -410,18 +413,30 @@ class ClientMonitoringService {
           emergency: false
         });
 
+        // Create mission record in Firebase
+        await set(ref(database, 'ronin/rover/mission'), {
+          status: 'DISPATCHED',
+          dispatchedAt: dispatchTime,
+          reason: `High hazard score detected (${hazardScore.toFixed(1)}/100)`,
+          location: 'Investigation site',
+          progress: 0,
+          hazardScore: hazardScore
+        });
+
+        // Create alert for notification
         await this.createAlert({
           type: 'Rover Dispatched',
           severity: 'medium',
           summary: `🤖 Rover automatically dispatched to investigate hazard (Score: ${hazardScore.toFixed(1)})`,
           details: {
-            reason: 'Auto-dispatch triggered by high hazard score',
+            reason: `Auto-dispatch triggered by high hazard score (${hazardScore.toFixed(1)}/100)`,
             hazardScore,
-            timestamp: Date.now()
+            location: 'Investigation site',
+            timestamp: dispatchTime
           }
         });
 
-        console.log('[ClientMonitoring] ✓ Rover dispatched');
+        console.log('[ClientMonitoring] ✓ Rover dispatched and mission created');
       }
     } catch (error) {
       console.error('[ClientMonitoring] Error checking auto-dispatch:', error);

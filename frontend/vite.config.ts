@@ -7,6 +7,19 @@ export default defineConfig({
   server: {
     host: "::",
     port: 8080,
+    proxy: {
+      // Proxy ESP32-CAM requests to avoid CORS issues
+      '/api/camera': {
+        target: 'http://192.168.1.18:81',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/camera/, ''),
+        configure: (proxy, _options) => {
+          proxy.on('error', (err, _req, _res) => {
+            console.log('ESP32 proxy error:', err);
+          });
+        },
+      },
+    },
   },
   plugins: [react()],
   resolve: {

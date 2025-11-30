@@ -2,7 +2,7 @@ import { Sidebar } from "@/components/Sidebar";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { AlertTriangle, Flame, Wind, Thermometer, UserCheck, Activity, Battery, MapPin, Info, Circle, FlaskConical } from "lucide-react";
+import { AlertTriangle, Flame, Wind, Thermometer, UserCheck, Activity, Battery, MapPin, Info, Circle } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
 import { HazardScoreModal } from "@/components/HazardScoreModal";
 import { SensorDetailDrawer } from "@/components/SensorDetailDrawer";
@@ -13,6 +13,9 @@ import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ErrorState } from "@/components/ErrorState";
 import { HazardAlertBanner } from "@/components/HazardAlertBanner";
 import { MonitoringControlPanel } from "@/components/MonitoringControlPanel";
+import { ValidationPanel } from "@/components/ValidationPanel";
+import { RoverMissionStatus } from "@/components/RoverMissionStatus";
+import { RoverDispatchNotification } from "@/components/RoverDispatchNotification";
 import { useState, useEffect, useMemo } from "react";
 import { useFirebase } from "@/contexts/FirebaseContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -24,7 +27,7 @@ import { useToast } from "@/hooks/use-toast";
 const Dashboard = () => {
   const [hazardScoreModalOpen, setHazardScoreModalOpen] = useState(false);
   const [sensorDrawerOpen, setSensorDrawerOpen] = useState(false);
-  const [selectedSensor, setSelectedSensor] = useState<"gas" | "temperature" | "fire" | "motion" | null>(null);
+  const [selectedSensor, setSelectedSensor] = useState<"MQ2" | "MQ135" | "temperature" | "fire" | "motion" | null>(null);
   const [emergencyActive, setEmergencyActive] = useState(false);
   const [gasHistory, setGasHistory] = useState<Array<{ time: string; mq2: number; mq135: number }>>([]);
   const [tempHistory, setTempHistory] = useState<Array<{ time: string; temp: number; humidity: number }>>([]);
@@ -39,6 +42,10 @@ const Dashboard = () => {
     iotError,
     hazardScore,
     riskLevel,
+    calculatedHazardScore,
+    calculatedRiskLevel,
+    hazardComparison,
+    divergenceThreshold,
     roverControl,
     roverStatus,
     roverLoading,
@@ -56,7 +63,7 @@ const Dashboard = () => {
       const gasData = last10.map(log => ({
         time: new Date(log.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
         mq2: log.mq2,
-        mq135: log.mq135
+        mq135: log.mq135 // Note: History stores the digital value (0 or 1)
       }));
 
       const tempData = last10.map(log => ({
@@ -76,7 +83,8 @@ const Dashboard = () => {
       const currentTime = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
       setGasHistory(prev => {
-        const updated = [...prev, { time: currentTime, mq2: iotReadings.mq2, mq135: iotReadings.mq135 }];
+        // Use mq135_digital (binary 0 or 1) instead of mq135 (legacy continuous)
+        const updated = [...prev, { time: currentTime, mq2: iotReadings.mq2, mq135: iotReadings.mq135_digital }];
         return updated.slice(-10); // Keep last 10
       });
 
@@ -85,15 +93,40 @@ const Dashboard = () => {
         return updated.slice(-10);
       });
     }
-  }, [iotReadings?.mq2, iotReadings?.mq135, iotReadings?.temperature, iotReadings?.humidity]);
+  }, [iotReadings?.mq2, iotReadings?.mq135_digital, iotReadings?.temperature, iotReadings?.humidity]);
 
   // Calculate sensor risks from real data
   const sensorRisks = useMemo(() => {
     if (!iotReadings) return [];
 
+    // Debug logging
+    console.log('[Dashboard] IoT Readings:', {
+      mq2: iotReadings.mq2,
+      mq135: iotReadings.mq135,
+      mq135_digital: iotReadings.mq135_digital,
+      temperature: iotReadings.temperature,
+      humidity: iotReadings.humidity
+    });
+
     const mq2Contribution = getSensorContribution(iotReadings.mq2, 'mq2');
-    const mq135Contribution = getSensorContribution(iotReadings.mq135, 'mq135');
+    
+    // For MQ-135: Fixed IoT uses binary (0/1), so normalize it to 0 or 100
+    // If mq135_digital is available, use it; otherwise fall back to mq135
+    const mq135Value = iotReadings.mq135_digital !== undefined ? iotReadings.mq135_digital : iotReadings.mq135;
+    const mq135Normalized = mq135Value === 1 ? 100 : 0; // Binary: 0 or 100
+    const mq135Contribution = {
+      normalized: mq135Normalized,
+      contribution: mq135Normalized * 0.6, // 60% weight
+      weight: 0.6
+    };
+    
     const tempContribution = getSensorContribution(iotReadings.temperature, 'temp');
+
+    console.log('[Dashboard] Sensor Contributions:', {
+      mq2: mq2Contribution,
+      mq135: mq135Contribution,
+      temp: tempContribution
+    });
 
     const getMQ2Status = (): 'SAFE' | 'WARNING' | 'DANGER' => {
       if (mq2Contribution.normalized < 30) return 'SAFE';
@@ -102,9 +135,8 @@ const Dashboard = () => {
     };
 
     const getMQ135Status = (): 'SAFE' | 'WARNING' | 'DANGER' => {
-      if (mq135Contribution.normalized < 30) return 'SAFE';
-      if (mq135Contribution.normalized < 60) return 'WARNING';
-      return 'DANGER';
+      // For binary MQ-135: 0 = SAFE, 1 = DANGER
+      return mq135Value === 1 ? 'DANGER' : 'SAFE';
     };
 
     const getTempStatus = (): 'SAFE' | 'WARNING' | 'DANGER' => {
@@ -127,14 +159,14 @@ const Dashboard = () => {
         title: "Gas Leak Risk (MQ-2)",
         status: getMQ2Status() as 'SAFE' | 'WARNING' | 'DANGER',
         message: `MQ-2 reading: ${iotReadings.mq2} (${mq2Contribution.normalized.toFixed(1)}% normalized)`,
-        sensorType: "gas" as const,
+        sensorType: "MQ2" as const,
       },
       {
         icon: Wind,
         title: "Air Quality Risk (MQ-135)",
         status: getMQ135Status() as 'SAFE' | 'WARNING' | 'DANGER',
-        message: `MQ-135 reading: ${iotReadings.mq135} (${mq135Contribution.normalized.toFixed(1)}% normalized)`,
-        sensorType: "gas" as const,
+        message: `MQ-135: ${mq135Value === 1 ? 'Threshold Exceeded' : 'Normal'} (Binary: ${mq135Value}, Normalized: ${mq135Normalized})`,
+        sensorType: "MQ135" as const,
       },
       {
         icon: Flame,
@@ -160,7 +192,7 @@ const Dashboard = () => {
     ];
   }, [iotReadings]);
 
-  const openSensorDrawer = (sensorType: "gas" | "temperature" | "fire" | "motion") => {
+  const openSensorDrawer = (sensorType: "MQ2" | "MQ135" | "temperature" | "fire" | "motion") => {
     setSelectedSensor(sensorType);
     setSensorDrawerOpen(true);
   };
@@ -186,46 +218,8 @@ const Dashboard = () => {
   };
 
   // Dev-only: Simulate test payload
-  const handleSimulateTestPayload = async () => {
-    if (process.env.NODE_ENV !== 'development') return;
-
-    try {
-      const testPayload = {
-        mq2: 450,
-        mq135: 800,
-        mq135_raw: 1,
-        mq135_digital: 1,
-        temperature: 45.2,
-        humidity: 34.1,
-        flame: true,
-        motion: false,
-        hazardScore: 70,
-        riskLevel: "DANGER",
-        status: {
-          online: true,
-          lastHeartbeat: Date.now()
-        },
-        emergency: {
-          active: false,
-          timestamp: 0
-        }
-      };
-
-      const iotRef = ref(database, 'ronin/iot');
-      await set(iotRef, testPayload);
-
-      toast({
-        title: "🧪 Test Payload Sent",
-        description: "Simulated DANGER condition with hazardScore: 70",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to send test payload",
-        variant: "destructive"
-      });
-    }
-  };
+  // Test payload function removed - use smoke test utilities in dev console instead
+  // Access via: window.roninSmokeTest.pushTestPayload("DANGER")
 
   const handleResendVerification = async () => {
     setResendLoading(true);
@@ -300,6 +294,9 @@ const Dashboard = () => {
     <div className="flex min-h-screen">
       <Sidebar />
 
+      {/* Rover Dispatch Notification Popup */}
+      <RoverDispatchNotification />
+
       {/* Email Verification Banner */}
       {!iotLoading && currentUser && !currentUser.emailVerified && (
         <div className="fixed top-0 left-0 right-0 z-50 bg-warning text-black shadow-lg">
@@ -334,19 +331,6 @@ const Dashboard = () => {
             <p className="text-xs sm:text-sm text-muted-foreground">Last updated: {new Date().toLocaleTimeString()}</p>
           </div>
           <div className="flex flex-wrap items-center gap-2 sm:gap-4">
-            {/* Dev-only Test Button */}
-            {process.env.NODE_ENV === 'development' && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleSimulateTestPayload}
-                className="gap-2"
-              >
-                <FlaskConical className="w-4 h-4" />
-                Test Payload
-              </Button>
-            )}
-
             {/* IoT Node Status */}
             <div className={`flex items-center gap-2 px-2 sm:px-3 py-1.5 rounded-full text-xs sm:text-sm ${iotNodeOnline
               ? 'bg-safe/10 border border-safe/20'
@@ -382,6 +366,29 @@ const Dashboard = () => {
                     <Info className="w-5 h-5 text-muted-foreground" />
                   </button>
                 </div>
+                
+                {/* Show calculated score comparison */}
+                <div className="mt-3 p-3 bg-primary/10 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-sm text-muted-foreground">Mathematical Model Score</div>
+                      <div className="font-semibold text-lg">{calculatedHazardScore.toFixed(1)}/100</div>
+                      <StatusBadge status={calculatedRiskLevel} size="sm" />
+                    </div>
+                    {hazardComparison && (
+                      <div className="text-right">
+                        <div className="text-sm text-muted-foreground">Divergence</div>
+                        <div className={`font-semibold ${hazardComparison.divergence > divergenceThreshold ? 'text-warning' : 'text-safe'}`}>
+                          {hazardComparison.divergence.toFixed(1)} pts
+                        </div>
+                        {hazardComparison.divergence > divergenceThreshold && (
+                          <div className="text-xs text-warning">⚠️ High divergence</div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
                 <p className="text-sm text-muted-foreground mt-2">
                   {riskLevel === 'SAFE' && 'All systems operating within normal parameters. Environment is secure.'}
                   {riskLevel === 'WARNING' && '⚠️ Elevated hazard levels detected. Monitoring closely.'}
@@ -427,42 +434,55 @@ const Dashboard = () => {
           {/* Live Graphs */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <Card className="p-6">
-              <h3 className="text-lg font-bold mb-4">Gas Level Trends</h3>
-              {gasHistory.length > 0 ? (
-                <ResponsiveContainer width="100%" height={250}>
-                  <LineChart data={gasHistory}>
+              <h3 className="text-lg font-bold mb-4">Gas Sensor Trends</h3>
+              <ResponsiveContainer width="100%" height={250}>
+                <LineChart data={gasHistory.length > 0 ? gasHistory : (iotReadings ? [{
+                  time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+                  mq2: iotReadings.mq2,
+                  mq135: iotReadings.mq135_digital
+                }] : [])}>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                     <XAxis dataKey="time" stroke="hsl(var(--muted-foreground))" />
                     <YAxis stroke="hsl(var(--muted-foreground))" />
-                    <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }} />
-                    <ReferenceLine y={500} stroke="hsl(var(--warning))" strokeDasharray="3 3" label="Warning" />
-                    <ReferenceLine y={700} stroke="hsl(var(--danger))" strokeDasharray="3 3" label="Danger" />
-                    <Line type="monotone" dataKey="mq2" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
-                    <Line type="monotone" dataKey="mq135" stroke="hsl(var(--safe))" strokeWidth={2} dot={false} />
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
+                      formatter={(value: any, name: string) => {
+                        if (name === 'MQ-135 (Threshold)') {
+                          return [value === 1 ? 'Alert' : 'OK', name];
+                        }
+                        return [value, name];
+                      }}
+                    />
+                    <ReferenceLine y={500} stroke="hsl(var(--warning))" strokeDasharray="3 3" label="MQ-2 Warning" />
+                    <ReferenceLine y={700} stroke="hsl(var(--danger))" strokeDasharray="3 3" label="MQ-2 Danger" />
+                    <Line type="monotone" dataKey="mq2" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} name="MQ-2 (Gas)" />
+                    <Line type="stepAfter" dataKey="mq135" stroke="hsl(var(--safe))" strokeWidth={2} dot={true} name="MQ-135 (Threshold)" />
                   </LineChart>
                 </ResponsiveContainer>
-              ) : (
-                <div className="h-[250px] flex items-center justify-center text-muted-foreground">
-                  Waiting for data...
-                </div>
-              )}
               <div className="flex gap-4 mt-4 text-sm">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 bg-primary rounded-full" />
-                  <span>MQ-2 (Gas): {iotReadings?.mq2 || 0}</span>
+                  <span>MQ-2 (Gas): {iotReadings?.mq2 || 0} PPM</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 bg-safe rounded-full" />
-                  <span>MQ-135 (Air): {iotReadings?.mq135 || 0}</span>
+                  <span>MQ-135 (Threshold): {iotReadings?.mq135_digital === 1 ? 'Alert' : 'OK'}</span>
                 </div>
+              </div>
+              <div className="text-xs text-muted-foreground mt-2">
+                ℹ️ MQ-135 shows binary threshold (0=OK, 1=Alert). See detail view for rover continuous reading.
+                {gasHistory.length === 0 && " ⏱️ Showing current reading - historical data will accumulate."}
               </div>
             </Card>
 
             <Card className="p-6">
               <h3 className="text-lg font-bold mb-4">Temperature & Humidity Trends</h3>
-              {tempHistory.length > 0 ? (
-                <ResponsiveContainer width="100%" height={250}>
-                  <LineChart data={tempHistory}>
+              <ResponsiveContainer width="100%" height={250}>
+                <LineChart data={tempHistory.length > 0 ? tempHistory : (iotReadings ? [{
+                  time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+                  temp: iotReadings.temperature,
+                  humidity: iotReadings.humidity
+                }] : [])}>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                     <XAxis dataKey="time" stroke="hsl(var(--muted-foreground))" />
                     <YAxis stroke="hsl(var(--muted-foreground))" />
@@ -473,11 +493,6 @@ const Dashboard = () => {
                     <Line type="monotone" dataKey="humidity" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
                   </LineChart>
                 </ResponsiveContainer>
-              ) : (
-                <div className="h-[250px] flex items-center justify-center text-muted-foreground">
-                  Waiting for data...
-                </div>
-              )}
               <div className="flex gap-4 mt-4 text-sm">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 bg-danger rounded-full" />
@@ -488,8 +503,19 @@ const Dashboard = () => {
                   <span>Humidity: {iotReadings?.humidity || 0}%</span>
                 </div>
               </div>
+              {tempHistory.length === 0 && (
+                <div className="text-xs text-muted-foreground mt-2">
+                  ⏱️ Showing current reading - historical data will accumulate over time
+                </div>
+              )}
             </Card>
           </div>
+
+          {/* Validation Panel */}
+          <ValidationPanel 
+            comparison={hazardComparison}
+            divergenceThreshold={divergenceThreshold}
+          />
 
           {/* Client-Side Monitoring Control */}
           <MonitoringControlPanel />
@@ -528,73 +554,8 @@ const Dashboard = () => {
               </Button>
             </Card>
 
-            <Card className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold">Rover Status</h3>
-                {roverLoading ? (
-                  <div className="text-xs text-muted-foreground">Loading...</div>
-                ) : (
-                  <>
-                    {roverMode === "auto" ? (
-                      <div className="px-2 py-1 bg-primary/10 text-primary text-xs font-semibold rounded">
-                        AUTO MODE ACTIVE
-                      </div>
-                    ) : (
-                      <div className="px-2 py-1 bg-muted text-muted-foreground text-xs font-semibold rounded">
-                        MANUAL CONTROL
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Status</span>
-                  <div className={`px-2 py-1 rounded text-xs font-semibold ${roverOnline ? 'bg-safe/10 text-safe' : 'bg-danger/10 text-danger'
-                    }`}>
-                    {roverOnline ? 'ONLINE' : 'OFFLINE'}
-                  </div>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground flex items-center gap-2">
-                    <Battery className="w-4 h-4" />
-                    Battery
-                  </span>
-                  <span className="font-semibold">{roverStatus?.battery || 0}%</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground flex items-center gap-2">
-                    <MapPin className="w-4 h-4" />
-                    Location
-                  </span>
-                  <span className="font-semibold">{roverStatus?.location || 'Unknown'}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Mode</span>
-                  <span className="font-semibold capitalize">{roverMode}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Direction</span>
-                  <span className="font-semibold capitalize">{roverControl?.direction || 'stop'}</span>
-                </div>
-              </div>
-
-              {/* Auto Dispatch Warning */}
-              {roverMode === "auto" && riskLevel === 'DANGER' && (
-                <div className="mt-4 p-3 bg-danger/10 border border-danger/20 rounded-lg">
-                  <div className="text-xs text-muted-foreground mb-2">⚠️ Auto-dispatch triggered</div>
-                  <div className="text-sm font-bold text-danger mb-2">
-                    Rover investigating hazard
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    Hazard level: {hazardScore.toFixed(1)}/100
-                  </div>
-                </div>
-              )}
-              <Button className="w-full mt-4" onClick={() => window.location.href = '/rover'}>
-                Open Rover Console
-              </Button>
-            </Card>
+            {/* Rover Mission Status - Shows dispatch, en route, and arrival status */}
+            <RoverMissionStatus />
 
             {/* System Health Panel */}
             <SystemHealthPanel />

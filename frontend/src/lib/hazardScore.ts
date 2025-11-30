@@ -28,14 +28,23 @@ export function normalize(value: number, min: number, max: number): number {
 /**
  * Compute hazard score using weighted formula
  * HazardScore = (0.6 × MQ135) + (0.3 × MQ2) + (0.1 × Temp)
+ * 
+ * Note: MQ-135 can be either:
+ * - Binary (0 or 1) for digital threshold output
+ * - Continuous (0-1000) for analog reading (future)
  */
 export function computeHazardScore(
   mq135: number,
   mq2: number,
   temperature: number,
-  ranges: SensorRanges = DEFAULT_SENSOR_RANGES
+  ranges: SensorRanges = DEFAULT_SENSOR_RANGES,
+  mq135IsBinary: boolean = false
 ): number {
-  const normMQ135 = normalize(mq135, ranges.mq135.min, ranges.mq135.max);
+  // Handle MQ-135 based on type
+  const normMQ135 = mq135IsBinary 
+    ? (mq135 === 1 ? 100 : 0) // Binary: 0 or 100
+    : normalize(mq135, ranges.mq135.min, ranges.mq135.max); // Continuous
+  
   const normMQ2 = normalize(mq2, ranges.mq2.min, ranges.mq2.max);
   const normTemp = normalize(temperature, ranges.temp.min, ranges.temp.max);
 

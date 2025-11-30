@@ -4,16 +4,20 @@ import { Card } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ErrorState } from "@/components/ErrorState";
-import { ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Square, VideoOff, Battery, MapPin } from "lucide-react";
+import { SimpleMjpegStream } from "@/components/SimpleMjpegStream";
+import { RecentAlerts } from "@/components/RecentAlerts";
+import { CVBackendStatus } from "@/components/CVBackendStatus";
+import { SensorDashboard } from "@/components/SensorDashboard";
+import { ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Square, VideoOff, Battery, MapPin, Send, CheckCircle, Navigation } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import { useFirebase } from "@/contexts/FirebaseContext";
 import { useToast } from "@/hooks/use-toast";
+import { dispatchRover, markRoverArrived, resetMission, subscribeToMission, type RoverMission } from "@/services/roverMissionService";
 
 const RoverConsole = () => {
   const [speed, setSpeed] = useState([50]);
   const [activeKey, setActiveKey] = useState<string | null>(null);
-  const [streamUrl, setStreamUrl] = useState<string>("");
-  const [lastFrameTime, setLastFrameTime] = useState<number>(Date.now());
+  const [mission, setMission] = useState<RoverMission | null>(null);
   
   const { toast } = useToast();
   
@@ -34,23 +38,17 @@ const RoverConsole = () => {
   const location = roverStatus?.location ?? 'Unknown';
   const roverOnline = roverStatus?.online ?? false;
 
-  // Camera stream URL (from rover status or config)
+  // Subscribe to mission updates
   useEffect(() => {
-    // In production, this would come from Firebase
-    // For now, use a placeholder or ESP32-CAM stream URL
-    const url = "http://192.168.1.100:81/stream"; // ESP32-CAM default
-    setStreamUrl(url);
+    const unsubscribe = subscribeToMission((missionData) => {
+      setMission(missionData);
+      console.log('[RoverConsole] Mission update:', missionData);
+    });
+
+    return () => unsubscribe();
   }, []);
 
-  // Update last frame time when stream is active
-  useEffect(() => {
-    if (roverOnline) {
-      const interval = setInterval(() => {
-        setLastFrameTime(Date.now());
-      }, 1000);
-      return () => clearInterval(interval);
-    }
-  }, [roverOnline]);
+
 
   // Movement control function
   const handleMove = useCallback(async (direction: 'forward' | 'back' | 'left' | 'right' | 'stop') => {
@@ -110,6 +108,53 @@ const RoverConsole = () => {
         title: "🚨 Emergency Stop",
         description: "Rover has been stopped immediately",
         variant: "destructive"
+      });
+    } catch (error) {
+      console.error('Emergency stop failed:', error);
+    }
+  }, [triggerEmergency, toast]);
+
+  // Dispatch rover
+  const handleDispatch = useCallback(async () => {
+    try {
+      await dispatchRover('Investigation Site', 'Manual dispatch from console');
+      toast({
+        title: "🚀 Rover Dispatched",
+        description: "Rover is heading to investigation site"
+      });
+    } catch (error) {
+      toast({
+        title: "Dispatch Failed",
+        description: "Failed to dispatch rover",
+        variant: "destructive"
+      });
+    }
+  }, [toast]);
+
+  // Mark as arrived
+  const handleMarkArrived = useCallback(async () => {
+    try {
+      await markRoverArrived();
+      toast({
+        title: "✅ Rover Arrived",
+        description: "Rover has reached the target location"
+      });
+    } catch (error) {
+      toast({
+        title: "Update Failed",
+        description: "Failed to update rover status",
+        variant: "destructive"
+      });
+    }
+  }, [toast]);
+
+  // Reset mission
+  const handleResetMission = useCallback(async () => {
+    try {
+      await resetMission();
+      toast({
+        title: "Mission Reset",
+        description: "Rover returned to IDLE state"
       });
     } catch (error) {
       toast({
@@ -213,64 +258,50 @@ const RoverConsole = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
             {/* Left Panel - Live Camera */}
             <div className="lg:col-span-2">
-              <Card className="p-4 sm:p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-bold">Live Camera Feed</h2>
-                  <div className="flex items-center gap-3">
-                    <div className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                      roverOnline ? 'bg-safe/10 text-safe' : 'bg-danger/10 text-danger'
+              <SimpleMjpegStream
+                streamUrl="http://192.168.1.18:81/stream"
+                nodeId="rover-01"
+                roverId="rover-01"
+                showControls={true}
+                onSnapshotSaved={(metadata) => {
+                  console.log('Snapshot saved:', metadata);
+                  toast({
+                    title: "Snapshot Saved",
+                    description: `Captured at ${new Date(metadata.timestamp).toLocaleTimeString()}`,
+                  });
+                }}
+              />
+              
+              {/* Sensor Dashboard */}
+              <div className="mt-4">
+                <SensorDashboard />
+              </div>
+              
+              {/* Recent Alerts */}
+              <div className="mt-4">
+                <RecentAlerts />
+              </div>
+              
+              {/* Rover Status Bar */}
+              <Card className="mt-4 p-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm">
+                  <div>
+                    <span className="font-semibold">Location:</span>{" "}
+                    <span className="text-muted-foreground">{location}</span>
+                  </div>
+                  <div>
+                    <span className="font-semibold">Battery:</span>{" "}
+                    <span className={`font-semibold ${
+                      battery > 50 ? 'text-green-500' : battery > 20 ? 'text-yellow-500' : 'text-red-500'
                     }`}>
-                      {roverOnline ? '● ONLINE' : '● OFFLINE'}
-                    </div>
+                      {battery}%
+                    </span>
                   </div>
-                </div>
-
-                <div className="aspect-video bg-secondary border-2 border-border rounded-lg overflow-hidden flex items-center justify-center">
-                  {roverOnline && streamUrl ? (
-                    <img 
-                      src={streamUrl} 
-                      alt="Rover Camera Feed"
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        // Fallback if stream fails
-                        e.currentTarget.style.display = 'none';
-                      }}
-                      onLoad={() => setLastFrameTime(Date.now())}
-                    />
-                  ) : (
-                    <div className="text-center p-8">
-                      <VideoOff className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-                      <p className="text-muted-foreground mb-2">
-                        {roverOnline 
-                          ? 'Camera offline – waiting for stream from rover' 
-                          : 'Rover is offline'}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {roverOnline 
-                          ? `Stream URL: ${streamUrl || 'Not configured'}` 
-                          : 'Check rover connection and power'}
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Stream Status Bar */}
-                <div className="mt-4 p-3 bg-secondary rounded-lg border border-border">
-                  <div className="flex items-center justify-between text-sm">
-                    <div>
-                      <span className="font-semibold">Stream Status:</span>{" "}
-                      <span className={roverOnline ? "text-safe" : "text-danger"}>
-                        {roverOnline ? "Connected" : "Disconnected"}
-                      </span>
-                    </div>
-                    {roverOnline && (
-                      <span className="text-xs text-muted-foreground">
-                        Last frame: {Math.floor((Date.now() - lastFrameTime) / 1000)}s ago
-                      </span>
-                    )}
-                  </div>
-                  <div className="mt-2 text-xs text-muted-foreground">
-                    Location: {location} | Battery: {battery}%
+                  <div>
+                    <span className="font-semibold">Rover Status:</span>{" "}
+                    <span className={roverOnline ? "text-green-500" : "text-red-500"}>
+                      {roverOnline ? "Online" : "Offline"}
+                    </span>
                   </div>
                 </div>
               </Card>
@@ -401,6 +432,75 @@ const RoverConsole = () => {
                   </p>
                 </div>
               </Card>
+
+              {/* Mission Control */}
+              <Card className="p-4 sm:p-6">
+                <h2 className="text-lg font-bold mb-4">Mission Control</h2>
+                
+                {/* Mission Status Display */}
+                <div className="mb-4 p-3 bg-secondary rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-semibold">Status:</span>
+                    <span className={`text-sm font-bold ${
+                      mission?.state === 'IDLE' ? 'text-muted-foreground' :
+                      mission?.state === 'DISPATCHED' || mission?.state === 'EN_ROUTE' ? 'text-primary' :
+                      mission?.state === 'ARRIVED' ? 'text-safe' :
+                      'text-warning'
+                    }`}>
+                      {mission?.state || 'IDLE'}
+                    </span>
+                  </div>
+                  {mission?.target && (
+                    <div className="text-xs text-muted-foreground">
+                      Target: {mission.target}
+                    </div>
+                  )}
+                  {mission?.reason && (
+                    <div className="text-xs text-muted-foreground mt-1">
+                      Reason: {mission.reason}
+                    </div>
+                  )}
+                </div>
+
+                {/* Mission Control Buttons */}
+                <div className="space-y-2">
+                  <Button
+                    className="w-full"
+                    onClick={handleDispatch}
+                    disabled={!roverOnline || (mission?.state !== 'IDLE' && mission?.state !== 'COMPLETED')}
+                  >
+                    <Send className="w-4 h-4 mr-2" />
+                    Dispatch Rover
+                  </Button>
+
+                  <Button
+                    className="w-full"
+                    variant="secondary"
+                    onClick={handleMarkArrived}
+                    disabled={!roverOnline || (mission?.state !== 'DISPATCHED' && mission?.state !== 'EN_ROUTE')}
+                  >
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Mark as Arrived
+                  </Button>
+
+                  <Button
+                    className="w-full"
+                    variant="outline"
+                    onClick={handleResetMission}
+                    disabled={!roverOnline || mission?.state === 'IDLE'}
+                  >
+                    <Navigation className="w-4 h-4 mr-2" />
+                    Reset Mission
+                  </Button>
+                </div>
+
+                <div className="mt-4 p-3 bg-muted rounded text-xs text-muted-foreground">
+                  <p className="font-semibold mb-1">Mission Flow:</p>
+                  <p>1. Dispatch → 2. Mark Arrived → 3. Reset</p>
+                </div>
+              </Card>
+
+              <CVBackendStatus className="mb-4" />
 
               <Card className="p-4 sm:p-6">
                 <h2 className="text-lg font-bold mb-4">Rover Status</h2>

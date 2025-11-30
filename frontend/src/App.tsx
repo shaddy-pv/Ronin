@@ -12,9 +12,11 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import RoverConsole from "./pages/RoverConsole";
-import Alerts from "./pages/Alerts";
+import SolutionPage from "./pages/SolutionPage";
+import AlertsPage from "./pages/AlertsPage";
 import HistoryPage from "./pages/HistoryPage";
 import SettingsPage from "./pages/SettingsPage";
+import CameraTest from "./pages/CameraTest";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -49,10 +51,18 @@ const App = () => (
                 }
               />
               <Route
+                path="/solution"
+                element={
+                  <ProtectedRoute>
+                    <SolutionPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
                 path="/alerts"
                 element={
                   <ProtectedRoute>
-                    <Alerts />
+                    <AlertsPage />
                   </ProtectedRoute>
                 }
               />
@@ -69,6 +79,14 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <SettingsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/camera-test"
+                element={
+                  <ProtectedRoute>
+                    <CameraTest />
                   </ProtectedRoute>
                 }
               />

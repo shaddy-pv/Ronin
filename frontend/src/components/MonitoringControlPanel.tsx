@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
-import { Switch } from './ui/switch';
-import { Label } from './ui/label';
+
 import { Play, Square, Activity, Info } from 'lucide-react';
 import { clientMonitoring } from '@/services/clientMonitoring';
 import { useToast } from '@/hooks/use-toast';

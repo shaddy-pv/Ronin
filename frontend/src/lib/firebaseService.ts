@@ -3,10 +3,10 @@ import { ref, onValue, set, update, push, off } from 'firebase/database';
 
 // Types based on RONIN Firebase structure (matching firmware schema)
 export interface IoTReadings {
-  mq2: number;
-  mq135: number;
-  mq135_raw: 0 | 1;
-  mq135_digital: 0 | 1;
+  mq2: number; // Continuous analog reading (PPM)
+  mq135: number; // Legacy field (may contain digital or analog value)
+  mq135_raw: 0 | 1; // Binary threshold flag (raw reading)
+  mq135_digital: 0 | 1; // Binary threshold flag (processed) - PRIMARY for hazard calc
   temperature: number;
   humidity: number;
   flame: boolean;
@@ -34,6 +34,14 @@ export interface RoverStatus {
   battery: number;
   location: string;
   online: boolean;
+}
+
+export interface RoverSensors {
+  mq2: number; // Continuous analog reading
+  mq135: number; // Continuous analog reading (NOT binary like fixed IoT)
+  temperature: number;
+  humidity: number;
+  timestamp: number;
 }
 
 export interface Alert {
@@ -101,6 +109,15 @@ export const subscribeToRoverStatus = (callback: (data: RoverStatus | null) => v
     callback(snapshot.val());
   });
   return () => off(roverStatusRef);
+};
+
+// Rover Sensors (analog readings including continuous MQ-135)
+export const subscribeToRoverSensors = (callback: (data: RoverSensors | null) => void) => {
+  const roverSensorsRef = ref(database, 'ronin/rover/sensors');
+  onValue(roverSensorsRef, (snapshot) => {
+    callback(snapshot.val());
+  });
+  return () => off(roverSensorsRef);
 };
 
 // Alerts

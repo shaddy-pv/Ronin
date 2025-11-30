@@ -1,12 +1,20 @@
 import { ref, set } from 'firebase/database';
 import { database } from './firebase';
 import { generateMockIoTReadings, generateMockRoverControl, generateMockRoverStatus } from './mockData';
+import { logger } from './logger';
 
 /**
  * Initialize Firebase with default structure and mock data
- * Use this for testing when hardware is not connected
+ * ⚠️ DEVELOPMENT ONLY - Use this for testing when hardware is not connected
+ * This function is disabled in production builds
  */
 export const initializeFirebaseStructure = async () => {
+  // Prevent execution in production
+  if (import.meta.env.PROD) {
+    console.error('❌ Mock initialization is disabled in production');
+    return false;
+  }
+
   try {
     // Initialize IoT readings
     const iotRef = ref(database, 'ronin/iot');
@@ -25,18 +33,25 @@ export const initializeFirebaseStructure = async () => {
     const roverStatusRef = ref(database, 'ronin/rover/status');
     await set(roverStatusRef, generateMockRoverStatus());
 
-    console.log('✅ Firebase structure initialized successfully');
+    logger.success('Firebase structure initialized successfully');
     return true;
   } catch (error) {
-    console.error('❌ Error initializing Firebase:', error);
+    logger.error('Error initializing Firebase', error);
     return false;
   }
 };
 
 /**
  * Reset Firebase to default state
+ * ⚠️ DEVELOPMENT ONLY - Disabled in production
  */
 export const resetFirebase = async () => {
+  // Prevent execution in production
+  if (import.meta.env.PROD) {
+    console.error('❌ Firebase reset is disabled in production');
+    return false;
+  }
+
   try {
     const roninRef = ref(database, 'ronin');
     await set(roninRef, {
@@ -54,10 +69,10 @@ export const resetFirebase = async () => {
       history: {}
     });
 
-    console.log('✅ Firebase reset successfully');
+    logger.success('Firebase reset successfully');
     return true;
   } catch (error) {
-    console.error('❌ Error resetting Firebase:', error);
+    logger.error('Error resetting Firebase', error);
     return false;
   }
 };

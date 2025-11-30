@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getDatabase, ref, onValue, off } from 'firebase/database';
 import { database } from '@/lib/firebase';
+import { logger } from '@/lib/logger';
 
 // Extended IoT Readings interface matching firmware schema
 export interface IoTReadings {
@@ -115,7 +116,7 @@ export const useIoTReadings = (path: string = '/ronin/iot') => {
           setLoading(false);
         },
         (err) => {
-          console.error('[useIoTReadings] Firebase error:', err);
+          logger.error('useIoTReadings Firebase error', err);
           setError(err as Error);
           setLoading(false);
         }
@@ -123,11 +124,11 @@ export const useIoTReadings = (path: string = '/ronin/iot') => {
 
       // Cleanup on unmount
       return () => {
-        console.debug('[useIoTReadings] Cleaning up listener for path:', path);
+        logger.debug('useIoTReadings cleaning up listener for path', path);
         off(nodeRef);
       };
     } catch (err) {
-      console.error('[useIoTReadings] Setup error:', err);
+      logger.error('useIoTReadings setup error', err);
       setError(err as Error);
       setLoading(false);
     }

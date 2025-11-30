@@ -1,5 +1,15 @@
 import { IoTReadings, RoverControl, RoverStatus, Alert, HistoryLog } from './firebaseService';
 
+/**
+ * ⚠️ DEVELOPMENT ONLY - Mock Data Generator
+ * This file should NEVER be used in production
+ */
+
+// Prevent accidental import in production
+if (import.meta.env.PROD) {
+  throw new Error('❌ Mock data imported in production! This should only be used in development.');
+}
+
 // Generate realistic mock IoT readings
 export const generateMockIoTReadings = (): IoTReadings => {
     const baseHazard = Math.random() * 100;

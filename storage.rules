@@ -1,0 +1,37 @@
+rules_version = '2';
+
+// Firebase Storage Security Rules for RONIN
+// These rules secure snapshot uploads and ensure only authenticated users can access them
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // RONIN Snapshots
+    match /ronin/snapshots/{fileName} {
+      // Allow authenticated users to read snapshots
+      allow read: if request.auth != null;
+      
+      // Allow authenticated users to upload snapshots with restrictions
+      allow write: if request.auth != null 
+                   && request.resource.size < 5 * 1024 * 1024  // Max 5MB
+                   && request.resource.contentType.matches('image/.*')  // Only images
+                   && request.resource.metadata.nodeId != null;  // Must have nodeId metadata
+    }
+    
+    // RONIN Alerts (with snapshots)
+    match /ronin/alerts/{alertId}/{fileName} {
+      // Allow authenticated users to read alert snapshots
+      allow read: if request.auth != null;
+      
+      // Allow authenticated users to upload alert snapshots
+      allow write: if request.auth != null 
+                   && request.resource.size < 5 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+    }
+    
+    // Deny all other access
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
