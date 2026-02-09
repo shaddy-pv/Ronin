@@ -1,7 +1,7 @@
-# RONIN Command Center - Production Ready Changes
+# AROHAN Command Center - Production Ready Changes
 
 ## Overview
-This document outlines the changes made to make the RONIN Command Center production-ready, with a focus on MQ-2 and MQ-135 sensor detail views and Fixed IoT vs Rover comparison.
+This document outlines the changes made to make the AROHAN Command Center production-ready, with a focus on MQ-2 and MQ-135 sensor detail views and Fixed IoT vs Rover comparison.
 
 ## Key Changes
 
@@ -115,7 +115,7 @@ Rover sensor data is not yet implemented. The UI shows "N/A" placeholders.
 #### Step 1: Update Firebase Structure
 Add rover sensor data to Firebase:
 ```
-/ronin/rover/sensors/
+/AROHAN/rover/sensors/
   ├── mq2: number
   ├── mq135_digital: 0 | 1
   ├── temperature: number
@@ -135,7 +135,7 @@ export const useRoverSensors = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const roverRef = ref(database, '/ronin/rover/sensors');
+    const roverRef = ref(database, '/AROHAN/rover/sensors');
     const unsubscribe = onValue(roverRef, (snapshot) => {
       setData(snapshot.val());
       setLoading(false);
@@ -236,7 +236,7 @@ frontend/src/
 
 For questions or issues:
 1. Check Firebase connection status in dashboard header
-2. Verify IoT node is sending data to `/ronin/iot`
+2. Verify IoT node is sending data to `/AROHAN/iot`
 3. Check browser console for errors
 4. Review `SENSOR_FIREBASE_STRUCTURE.md` for data format
 

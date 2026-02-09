@@ -17,11 +17,11 @@ export const initializeFirebaseStructure = async () => {
 
   try {
     // Initialize IoT readings
-    const iotRef = ref(database, 'ronin/iot');
+    const iotRef = ref(database, 'arohan/iot');
     await set(iotRef, generateMockIoTReadings());
 
     // Initialize Rover control
-    const roverControlRef = ref(database, 'ronin/rover/control');
+    const roverControlRef = ref(database, 'arohan/rover/control');
     await set(roverControlRef, {
       direction: 'stop',
       speed: 0,
@@ -30,7 +30,7 @@ export const initializeFirebaseStructure = async () => {
     });
 
     // Initialize Rover status
-    const roverStatusRef = ref(database, 'ronin/rover/status');
+    const roverStatusRef = ref(database, 'arohan/rover/status');
     await set(roverStatusRef, generateMockRoverStatus());
 
     logger.success('Firebase structure initialized successfully');
@@ -53,8 +53,8 @@ export const resetFirebase = async () => {
   }
 
   try {
-    const roninRef = ref(database, 'ronin');
-    await set(roninRef, {
+    const arohanRef = ref(database, 'arohan');
+    await set(arohanRef, {
       iot: generateMockIoTReadings(),
       rover: {
         control: {

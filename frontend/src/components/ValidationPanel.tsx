@@ -25,7 +25,7 @@ export const ValidationPanel: React.FC<ValidationPanelProps> = ({
   // Subscribe to recent divergence events
   useEffect(() => {
     const eventsRef = query(
-      ref(database, 'ronin/validation/divergence_events'),
+      ref(database, 'arohan/validation/divergence_events'),
       orderByChild('timestamp'),
       limitToLast(10)
     );

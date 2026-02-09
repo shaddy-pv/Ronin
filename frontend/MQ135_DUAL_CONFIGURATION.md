@@ -1,7 +1,7 @@
 # MQ-135 Dual Configuration Guide
 
 ## Overview
-The RONIN Command Center uses a **dual MQ-135 configuration** to provide both threshold-based alerts and continuous air quality monitoring:
+The AROHAN Command Center uses a **dual MQ-135 configuration** to provide both threshold-based alerts and continuous air quality monitoring:
 
 - **Fixed IoT Node**: Binary threshold (0/1) from digital output
 - **Rover Node**: Continuous analog reading (PPM) for verification
@@ -97,7 +97,7 @@ Contribution: 12.8 points
 ### Fixed IoT Node
 ```json
 {
-  "ronin": {
+  "AROHAN": {
     "iot": {
       "mq135_digital": 0,  // Binary: 0 or 1
       "mq135_raw": 0,      // Raw digital reading
@@ -111,7 +111,7 @@ Contribution: 12.8 points
 ### Rover Node
 ```json
 {
-  "ronin": {
+  "AROHAN": {
     "rover": {
       "sensors": {
         "mq135": 450,      // Continuous analog: 0-1000 PPM
@@ -135,7 +135,7 @@ Contribution: 12.8 points
 
 ### Data Fetching
 - **`frontend/src/hooks/useRoverSensors.ts`**
-  - Subscribes to `/ronin/rover/sensors`
+  - Subscribes to `/AROHAN/rover/sensors`
   - Returns rover sensor data including continuous MQ-135
 
 ### UI Components
@@ -170,7 +170,7 @@ Contribution: 12.8 points
 ## Integration Steps
 
 ### Step 1: Connect Rover to Firebase
-Ensure rover is sending data to `/ronin/rover/sensors`:
+Ensure rover is sending data to `/AROHAN/rover/sensors`:
 ```json
 {
   "mq135": 450,  // Continuous analog reading
@@ -220,7 +220,7 @@ Ensure rover is sending data to `/ronin/rover/sensors`:
 ## Troubleshooting
 
 ### Rover Shows N/A
-- Check Firebase path: `/ronin/rover/sensors`
+- Check Firebase path: `/AROHAN/rover/sensors`
 - Verify rover is online and sending data
 - Check `useRoverSensors()` hook in console
 

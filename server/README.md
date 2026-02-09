@@ -1,6 +1,6 @@
-# RONIN Server
+# AROHAN Server
 
-This folder contains server-side code for the RONIN system.
+This folder contains server-side code for the AROHAN system.
 
 ## Purpose
 

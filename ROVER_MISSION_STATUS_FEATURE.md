@@ -116,7 +116,7 @@ Bottom section shows:
 
 ### **Firebase Subscriptions**
 
-1. **Rover Control** (`/ronin/rover/control`):
+1. **Rover Control** (`/AROHAN/rover/control`):
    ```typescript
    {
      mode: 'auto' | 'manual',
@@ -127,7 +127,7 @@ Bottom section shows:
    ```
    - Triggers DISPATCHED state when mode changes to 'auto'
 
-2. **Rover Status** (`/ronin/rover/status`):
+2. **Rover Status** (`/AROHAN/rover/status`):
    ```typescript
    {
      battery: number,
@@ -137,7 +137,7 @@ Bottom section shows:
    ```
    - Updates battery, connection, and location info
 
-3. **Alerts** (`/ronin/alerts`):
+3. **Alerts** (`/AROHAN/alerts`):
    ```typescript
    {
      type: 'Rover Dispatched',
@@ -426,13 +426,13 @@ const PROGRESS_INCREMENT = 5; // 5% per update
 
 ```typescript
 // Rover control
-'ronin/rover/control'
+'AROHAN/rover/control'
 
 // Rover status
-'ronin/rover/status'
+'AROHAN/rover/status'
 
 // Dispatch alerts
-'ronin/alerts' (filtered by type: 'Rover Dispatched')
+'AROHAN/alerts' (filtered by type: 'Rover Dispatched')
 ```
 
 ---
@@ -451,7 +451,7 @@ useEffect(() => {
 ### **Issue**: Progress bar not animating
 **Solution**: Verify rover control mode is set to 'auto'
 ```typescript
-// Check Firebase: /ronin/rover/control/mode
+// Check Firebase: /AROHAN/rover/control/mode
 // Should be 'auto' not 'manual'
 ```
 

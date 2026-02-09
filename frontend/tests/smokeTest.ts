@@ -106,7 +106,7 @@ export const TEST_SCENARIOS = {
  */
 export async function pushTestPayload(scenario: keyof typeof TEST_SCENARIOS): Promise<void> {
     const payload = TEST_SCENARIOS[scenario];
-    const iotRef = ref(database, 'ronin/iot');
+    const iotRef = ref(database, 'arohan/iot');
 
     console.log(`[SmokeTest] Pushing ${scenario} scenario:`, payload);
 

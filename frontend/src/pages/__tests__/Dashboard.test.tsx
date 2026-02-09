@@ -157,7 +157,7 @@ describe('Dashboard Hazard Score Color Mapping', () => {
 
     render(<Dashboard />);
     
-    expect(screen.getByText(/Connecting to RONIN node/i)).toBeInTheDocument();
+    expect(screen.getByText(/Connecting to AROHAN node/i)).toBeInTheDocument();
   });
 
   it('should display no data state when no readings available', () => {

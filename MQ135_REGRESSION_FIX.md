@@ -30,7 +30,7 @@ normalized = (100 * (1 - 300)) / (1000 - 300) = -42.71
 
 ## Data Structure Clarification
 
-### **Firebase IoT Data** (`/ronin/iot`):
+### **Firebase IoT Data** (`/AROHAN/iot`):
 
 ```json
 {
@@ -54,7 +54,7 @@ normalized = (100 * (1 - 300)) / (1000 - 300) = -42.71
 - **`mq135_digital`**: Binary threshold (0 = OK, 1 = Alert) - **This is what we should use**
 - **`mq135_raw`**: Raw binary reading
 
-### **Rover Data** (`/ronin/rover/sensors`):
+### **Rover Data** (`/AROHAN/rover/sensors`):
 
 ```json
 {
@@ -147,7 +147,7 @@ console.log('[Dashboard] Sensor Contributions:', {
 ## Data Flow (Fixed)
 
 ```
-Firebase: /ronin/iot
+Firebase: /AROHAN/iot
     ↓
 useIoTReadings() Hook
     ↓

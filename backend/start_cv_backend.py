@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-RONIN CV Backend Startup Script
+AROHAN CV Backend Startup Script
 """
 
 import os
@@ -40,7 +40,7 @@ def install_requirements():
         return False
 
 def main():
-    print("🚀 RONIN CV Backend Startup")
+    print("🚀 AROHAN CV Backend Startup")
     print("=" * 40)
     
     # Check if requirements are installed

@@ -9,7 +9,7 @@ import numpy as np
 import requests
 from pathlib import Path
 
-print("🔍 RONIN Face Detection Diagnostic Tool")
+print("🔍 AROHAN Face Detection Diagnostic Tool")
 print("=" * 50)
 
 # Test 1: Check OpenCV Installation

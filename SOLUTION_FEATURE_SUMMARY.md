@@ -79,7 +79,7 @@ npm run dev
 - **Model**: gemini-pro
 
 ### Firebase Data Source
-- **Path**: `/ronin/iot/<currentZone>/sensors`
+- **Path**: `/AROHAN/iot/<currentZone>/sensors`
 - **Real-time**: Uses existing Firebase context
 - **Fields**: mq2, mq135, temperature, humidity, flame, motion, hazardScore
 

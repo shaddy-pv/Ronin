@@ -1,13 +1,13 @@
 rules_version = '2';
 
-// Firebase Storage Security Rules for RONIN
+// Firebase Storage Security Rules for AROHAN
 // These rules secure snapshot uploads and ensure only authenticated users can access them
 
 service firebase.storage {
   match /b/{bucket}/o {
     
-    // RONIN Snapshots
-    match /ronin/snapshots/{fileName} {
+    // AROHAN Snapshots
+    match /arohan/snapshots/{fileName} {
       // Allow authenticated users to read snapshots
       allow read: if request.auth != null;
       
@@ -18,8 +18,8 @@ service firebase.storage {
                    && request.resource.metadata.nodeId != null;  // Must have nodeId metadata
     }
     
-    // RONIN Alerts (with snapshots)
-    match /ronin/alerts/{alertId}/{fileName} {
+    // AROHAN Alerts (with snapshots)
+    match /arohan/alerts/{alertId}/{fileName} {
       // Allow authenticated users to read alert snapshots
       allow read: if request.auth != null;
       

@@ -1,5 +1,5 @@
 /**
- * Sensor data types for RONIN Command Center
+ * Sensor data types for AROHAN Command Center
  * Supports both Fixed IoT node and Rover node readings
  */
 

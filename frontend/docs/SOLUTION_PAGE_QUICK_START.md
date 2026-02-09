@@ -2,7 +2,7 @@
 
 ## What You Get
 
-A new **"Solution"** page in your RONIN dashboard that uses Google Gemini AI to analyze your live sensor data and provide actionable safety recommendations.
+A new **"Solution"** page in your AROHAN dashboard that uses Google Gemini AI to analyze your live sensor data and provide actionable safety recommendations.
 
 ## 3-Step Setup
 
@@ -141,7 +141,7 @@ Google Gemini Pro is **free** for:
 - 60 requests per minute
 - 1,500 requests per day
 
-This is more than enough for typical RONIN usage.
+This is more than enough for typical AROHAN usage.
 
 ## Privacy & Security
 

@@ -1,4 +1,4 @@
-# 🔍 RONIN SYSTEM LOGIC - COMPLETE ANALYSIS
+# 🔍 AROHAN SYSTEM LOGIC - COMPLETE ANALYSIS
 ## Part 1: Sensor Data Flow
 
 ---
@@ -7,7 +7,7 @@
 
 ### 📡 **Data Source: Firebase Realtime Database**
 
-**Firebase Path**: `/ronin/iot`
+**Firebase Path**: `/AROHAN/iot`
 
 All sensor data comes from Firebase Realtime Database, pushed by ESP32/Arduino IoT device.
 
@@ -16,7 +16,7 @@ All sensor data comes from Firebase Realtime Database, pushed by ESP32/Arduino I
 ### **MQ-2 Gas Sensor (Continuous Analog)**
 
 #### **Raw Data Source**:
-- **Firebase Path**: `/ronin/iot/mq2`
+- **Firebase Path**: `/AROHAN/iot/mq2`
 - **Data Type**: `number` (PPM - Parts Per Million)
 - **Range**: 0-1023 (raw ADC) or calibrated PPM value
 
@@ -61,14 +61,14 @@ getMQ2Status(normalized: number): string {
 ### **MQ-135 Air Quality Sensor (DUAL CONFIGURATION)**
 
 #### **Fixed IoT Node - Binary Threshold**:
-- **Firebase Path**: `/ronin/iot/mq135_digital`
+- **Firebase Path**: `/AROHAN/iot/mq135_digital`
 - **Data Type**: `0 | 1` (binary threshold)
 - **Meaning**: 
   - `0` = Air quality OK (below threshold)
   - `1` = Air quality ALERT (threshold exceeded)
 
 #### **Rover Node - Continuous Analog**:
-- **Firebase Path**: `/ronin/rover/sensors/mq135`
+- **Firebase Path**: `/AROHAN/rover/sensors/mq135`
 - **Data Type**: `number` (PPM - Parts Per Million)
 - **Range**: 300-1000 PPM
 
@@ -83,7 +83,7 @@ mq135_digital: (val.mq135_digital == 1) ? 1 : 0,  // PRIMARY
 
 **Rover** - `frontend/src/hooks/useRoverSensors.ts` + `frontend/src/lib/firebaseService.ts` (Line 28-33):
 ```typescript
-// Subscribes to /ronin/rover/sensors
+// Subscribes to /AROHAN/rover/sensors
 RoverSensors {
   mq135: number  // Continuous PPM value
 }
@@ -145,7 +145,7 @@ getMQ135Status(digital: 0 | 1): string {
 ### **Temperature Sensor**
 
 #### **Raw Data Source**:
-- **Firebase Path**: `/ronin/iot/temperature`
+- **Firebase Path**: `/AROHAN/iot/temperature`
 - **Data Type**: `number` (°C - Celsius)
 - **Sensor**: DHT22
 
@@ -188,7 +188,7 @@ getTempStatus(): 'SAFE' | 'WARNING' | 'DANGER' {
 ### **Humidity Sensor**
 
 #### **Raw Data Source**:
-- **Firebase Path**: `/ronin/iot/humidity`
+- **Firebase Path**: `/AROHAN/iot/humidity`
 - **Data Type**: `number` (% - Percentage)
 - **Sensor**: DHT22
 
@@ -211,7 +211,7 @@ humidity < 30 ? 'Dry' : humidity < 60 ? 'Normal' : 'Humid'
 ### **Flame Sensor (Fire Detection)**
 
 #### **Raw Data Source**:
-- **Firebase Path**: `/ronin/iot/flame`
+- **Firebase Path**: `/AROHAN/iot/flame`
 - **Data Type**: `boolean` (true/false)
 - **Sensor**: IR Flame Sensor Module
 
@@ -249,7 +249,7 @@ if (data.flame && !before.flame) {
 ### **Motion Sensor (Human Presence)**
 
 #### **Raw Data Source**:
-- **Firebase Path**: `/ronin/iot/motion`
+- **Firebase Path**: `/AROHAN/iot/motion`
 - **Data Type**: `boolean` (true/false)
 - **Sensor**: PIR Motion Sensor
 
@@ -289,7 +289,7 @@ if (data.motion && !before.motion) {
 ```
 ESP32/Arduino IoT Device
     ↓
-Firebase Realtime Database (/ronin/iot)
+Firebase Realtime Database (/AROHAN/iot)
     ↓
 useIoTReadings() hook (subscribes, normalizes)
     ↓

@@ -1,6 +1,6 @@
 /**
  * Pure utility functions for hazard score calculation
- * Based on RONIN mathematical model
+ * Based on AROHAN mathematical model
  */
 
 export interface SensorRanges {

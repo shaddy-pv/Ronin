@@ -12,7 +12,7 @@ export const useHazardScore = () => {
   useEffect(() => {
     setLoading(true);
     try {
-      const hazardScoreRef = ref(database, 'ronin/iot/hazardScore');
+      const hazardScoreRef = ref(database, 'arohan/iot/hazardScore');
       
       const unsubscribe = onValue(hazardScoreRef, (snapshot) => {
         const score = snapshot.val() || 0;

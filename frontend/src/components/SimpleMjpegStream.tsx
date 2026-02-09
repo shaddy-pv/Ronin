@@ -136,7 +136,7 @@ export const SimpleMjpegStream: React.FC<SimpleMjpegStreamProps> = ({
       
       // Upload to Firebase Storage
       const storage = getStorage(app);
-      const fileRef = storageRef(storage, `ronin/snapshots/${fileName}`);
+      const fileRef = storageRef(storage, `arohan/snapshots/${fileName}`);
       
       await uploadBytes(fileRef, blob, {
         contentType: 'image/jpeg',
@@ -163,7 +163,7 @@ export const SimpleMjpegStream: React.FC<SimpleMjpegStreamProps> = ({
       };
       
       // Save metadata to Realtime Database
-      const snapshotsRef = dbRef(database, 'ronin/snapshots');
+      const snapshotsRef = dbRef(database, 'arohan/snapshots');
       const newSnapshotRef = push(snapshotsRef);
       await set(newSnapshotRef, metadata);
       

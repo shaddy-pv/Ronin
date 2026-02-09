@@ -95,7 +95,7 @@ console.log('[MQ135 Detail] Chart Data:', {
 ┌─────────────────────────────────────────────────────────────┐
 │ Firebase Realtime Database                                  │
 ├─────────────────────────────────────────────────────────────┤
-│ /ronin/iot                    /ronin/rover/sensors          │
+│ /AROHAN/iot                    /AROHAN/rover/sensors          │
 │ ├── mq2: 450                  ├── mq2: 420                  │
 │ ├── mq135_digital: 0          ├── mq135: 650                │
 │ ├── temperature: 28.5         ├── temperature: 27.8         │
@@ -288,8 +288,8 @@ When you open the detail views, you should see:
 
 **Check**:
 1. Look at console logs for actual values
-2. Compare `fixedMQ2` in log vs Firebase `/ronin/iot/mq2`
-3. Compare `roverMQ2` in log vs Firebase `/ronin/rover/sensors/mq2`
+2. Compare `fixedMQ2` in log vs Firebase `/AROHAN/iot/mq2`
+3. Compare `roverMQ2` in log vs Firebase `/AROHAN/rover/sensors/mq2`
 
 **Solution**: If values are wrong, issue is in `useRealtimeChartData` hook, not the drawer.
 

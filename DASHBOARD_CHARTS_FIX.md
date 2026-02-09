@@ -10,7 +10,7 @@ The main dashboard charts (Gas Sensor Trends and Temperature & Humidity Trends) 
 
 The charts were conditionally rendered based on `gasHistory.length > 0` and `tempHistory.length > 0`. These arrays are populated from:
 
-1. **Firebase History** (`/ronin/history`) - Historical logs
+1. **Firebase History** (`/AROHAN/history`) - Historical logs
 2. **Current Readings** - Added via useEffect when IoT data updates
 
 **Issue**: If there's no historical data in Firebase yet, the arrays remain empty and charts don't display, even though current sensor readings are available.

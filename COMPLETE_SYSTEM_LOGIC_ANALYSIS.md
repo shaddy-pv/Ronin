@@ -1,11 +1,11 @@
-# 🔍 RONIN SYSTEM LOGIC - COMPLETE ANALYSIS
+# 🔍 AROHAN SYSTEM LOGIC - COMPLETE ANALYSIS
 ## Master Overview Document
 
 ---
 
 ## 📋 **OVERVIEW**
 
-This is a comprehensive analysis of the RONIN IoT monitoring system, documenting every aspect of the sensor data flow, mathematical modeling, chart system, thresholds, and rover dispatch logic.
+This is a comprehensive analysis of the AROHAN IoT monitoring system, documenting every aspect of the sensor data flow, mathematical modeling, chart system, thresholds, and rover dispatch logic.
 
 **Purpose**: Complete knowledge transfer and system documentation for developers, maintainers, and stakeholders.
 
@@ -107,8 +107,8 @@ frontend/src/components/SensorDetailDrawer.tsx  # Detail charts
                              ↓
 ┌─────────────────────────────────────────────────────────────────┐
 │                  Firebase Realtime Database                      │
-│                      /ronin/iot/{sensors}                        │
-│                    /ronin/rover/{sensors}                        │
+│                      /AROHAN/iot/{sensors}                        │
+│                    /AROHAN/rover/{sensors}                        │
 └────────────────────────────┬────────────────────────────────────┘
                              │ Real-time subscription
                              ↓
@@ -244,7 +244,7 @@ frontend/src/components/SensorDetailDrawer.tsx  # Detail charts
 
 This documentation was created through comprehensive code analysis and system review.
 
-**Maintained by**: RONIN Development Team
+**Maintained by**: AROHAN Development Team
 
 ---
 

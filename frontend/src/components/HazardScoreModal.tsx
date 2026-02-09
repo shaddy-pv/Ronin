@@ -15,12 +15,12 @@ export const HazardScoreModal = ({ open, onOpenChange }: HazardScoreModalProps) 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>How RONIN Calculates Hazard Score</DialogTitle>
+          <DialogTitle>How AROHAN Calculates Hazard Score</DialogTitle>
         </DialogHeader>
         
         <div className="space-y-4">
           <p className="text-muted-foreground">
-            The RONIN system uses a weighted algorithm to assess environmental hazards in real-time. 
+            The AROHAN system uses a weighted algorithm to assess environmental hazards in real-time. 
             Multiple sensor inputs are normalized and combined to produce a single, actionable safety score 
             ranging from 0 (completely safe) to 100 (critical danger).
           </p>

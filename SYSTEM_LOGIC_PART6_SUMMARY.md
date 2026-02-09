@@ -1,4 +1,4 @@
-# 🔍 RONIN SYSTEM LOGIC - COMPLETE ANALYSIS
+# 🔍 AROHAN SYSTEM LOGIC - COMPLETE ANALYSIS
 ## Part 6: Final Summary & System Pipeline
 
 ---
@@ -10,7 +10,7 @@
 ```
 📡 ESP32/Arduino IoT Device
     ↓ (Pushes sensor data)
-Firebase Realtime Database (/ronin/iot)
+Firebase Realtime Database (/AROHAN/iot)
     ↓ (Real-time subscription)
 useIoTReadings() Hook
     ↓ (Normalizes & processes)
@@ -53,13 +53,13 @@ Rover Response:
 
 | Sensor | Firebase Path | Data Type | Range | Normalization | Weight | Status Levels |
 |--------|---------------|-----------|-------|---------------|--------|--------------|
-| **MQ-135 Fixed** | `/ronin/iot/mq135_digital` | Binary (0/1) | 0 or 1 | 0→0, 1→100 | 60% | Normal, Threshold Exceeded |
-| **MQ-135 Rover** | `/ronin/rover/sensors/mq135` | Number (PPM) | 300-1000 | Linear 0-100 | 60%* | Continuous scale |
-| **MQ-2** | `/ronin/iot/mq2` | Number (PPM) | 200-800 | Linear 0-100 | 30% | Normal, Elevated, High, Critical |
-| **Temperature** | `/ronin/iot/temperature` | Number (°C) | 20-50 | Linear 0-100 | 10% | SAFE, WARNING, DANGER |
-| **Humidity** | `/ronin/iot/humidity` | Number (%) | 0-100 | None | 0% | Dry, Normal, Humid |
-| **Flame** | `/ronin/iot/flame` | Boolean | true/false | None | 0% | SAFE, DANGER |
-| **Motion** | `/ronin/iot/motion` | Boolean | true/false | None | 0% | SAFE, WARNING |
+| **MQ-135 Fixed** | `/AROHAN/iot/mq135_digital` | Binary (0/1) | 0 or 1 | 0→0, 1→100 | 60% | Normal, Threshold Exceeded |
+| **MQ-135 Rover** | `/AROHAN/rover/sensors/mq135` | Number (PPM) | 300-1000 | Linear 0-100 | 60%* | Continuous scale |
+| **MQ-2** | `/AROHAN/iot/mq2` | Number (PPM) | 200-800 | Linear 0-100 | 30% | Normal, Elevated, High, Critical |
+| **Temperature** | `/AROHAN/iot/temperature` | Number (°C) | 20-50 | Linear 0-100 | 10% | SAFE, WARNING, DANGER |
+| **Humidity** | `/AROHAN/iot/humidity` | Number (%) | 0-100 | None | 0% | Dry, Normal, Humid |
+| **Flame** | `/AROHAN/iot/flame` | Boolean | true/false | None | 0% | SAFE, DANGER |
+| **Motion** | `/AROHAN/iot/motion` | Boolean | true/false | None | 0% | SAFE, WARNING |
 
 *MQ-135 uses max(fixed, rover) as effective value
 
@@ -127,7 +127,7 @@ Where:
 
 #### **Dispatch Process**:
 1. ✅ Check conditions and cooldown
-2. ✅ Log dispatch to Firebase (`/ronin/rover/dispatch_log`)
+2. ✅ Log dispatch to Firebase (`/AROHAN/rover/dispatch_log`)
 3. ✅ Create UI alert
 4. ⚠️ **TODO**: Send actual command to rover
 5. ⚠️ **TODO**: Track mission progress
@@ -161,7 +161,7 @@ async sendRoverCommand(command: RoverCommand): Promise<void> {
 **Needed**: Track mission progress and completion
 ```typescript
 // TODO: Add to Firebase structure
-/ronin/rover/missions/
+/AROHAN/rover/missions/
   ├── {mission_id}/
   │   ├── status: 'DISPATCHED' | 'IN_PROGRESS' | 'COMPLETED'
   │   ├── progress: number  // 0-100%
@@ -205,7 +205,7 @@ export const SYSTEM_THRESHOLDS = {
 **Needed**: Long-term data storage and retrieval
 ```typescript
 // TODO: Implement data archiving
-/ronin/history/
+/AROHAN/history/
   ├── daily/
   │   └── 2025-11-30/
   │       ├── hourly_averages
@@ -258,7 +258,7 @@ export const SYSTEM_THRESHOLDS = {
 **Needed**: Multiple sites with centralized dashboard
 ```typescript
 // TODO: Multi-site architecture
-/ronin/sites/
+/AROHAN/sites/
   ├── site_1/
   │   ├── iot/
   │   ├── rover/
@@ -429,7 +429,7 @@ This complete analysis is split into 6 parts:
 
 ## 🏁 **CONCLUSION**
 
-The RONIN system is a **comprehensive IoT monitoring platform** with:
+The AROHAN system is a **comprehensive IoT monitoring platform** with:
 - ✅ Robust real-time data processing
 - ✅ Sophisticated hazard scoring algorithm
 - ✅ Dual-source sensor fusion (Fixed + Rover)

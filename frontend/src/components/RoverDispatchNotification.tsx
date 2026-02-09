@@ -19,7 +19,7 @@ export const RoverDispatchNotification = () => {
 
   // Listen for rover dispatch events
   useEffect(() => {
-    const alertsRef = ref(database, 'ronin/alerts');
+    const alertsRef = ref(database, 'arohan/alerts');
     const unsubscribe = onValue(alertsRef, (snapshot) => {
       const data = snapshot.val();
       if (!data) return;

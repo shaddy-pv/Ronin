@@ -4,7 +4,7 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    RONIN Command Center Dashboard                    │
+│                    AROHAN Command Center Dashboard                    │
 └─────────────────────────────────────────────────────────────────────┘
                                     ▲
                                     │
@@ -39,7 +39,7 @@ Digital Reading: 0 or 1
      ├─ Normal Air Quality? → 0
      │
      ▼
-Firebase: /ronin/iot/mq135_digital
+Firebase: /AROHAN/iot/mq135_digital
      │
      ▼
 Dashboard: "OK" or "ALERT"
@@ -63,7 +63,7 @@ Analog Reading: 0-1023
 PPM Value: 0-1000
      │
      ▼
-Firebase: /ronin/rover/sensors/mq135
+Firebase: /AROHAN/rover/sensors/mq135
      │
      ▼
 Dashboard: "450 PPM"

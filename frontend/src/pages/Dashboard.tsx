@@ -199,7 +199,7 @@ const Dashboard = () => {
 
   const handleEmergencyActivation = async () => {
     try {
-      const emergencyRef = ref(database, 'ronin/iot/emergency');
+      const emergencyRef = ref(database, 'arohan/iot/emergency');
       await update(emergencyRef, { active: true, timestamp: Date.now() });
       setEmergencyActive(true);
 
@@ -257,7 +257,7 @@ const Dashboard = () => {
       <div className="flex min-h-screen">
         <Sidebar />
         <main className="flex-1">
-          <LoadingSpinner fullScreen message="Connecting to RONIN node..." />
+          <LoadingSpinner fullScreen message="Connecting to AROHAN node..." />
         </main>
       </div>
     );
@@ -274,7 +274,7 @@ const Dashboard = () => {
               <Activity className="w-16 h-16 mx-auto text-muted-foreground opacity-50" />
               <h2 className="text-2xl font-bold">No Live Data Found</h2>
               <p className="text-muted-foreground">
-                Waiting for RONIN IoT node to send data. Make sure the device is powered on and connected to Firebase.
+                Waiting for AROHAN IoT node to send data. Make sure the device is powered on and connected to Firebase.
               </p>
               <Button onClick={() => window.location.reload()} variant="outline">
                 Refresh
@@ -327,7 +327,7 @@ const Dashboard = () => {
         {/* Header */}
         <header className="sticky top-0 z-10 bg-card border-b border-border px-4 sm:px-8 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold">RONIN Command Center</h1>
+            <h1 className="text-xl sm:text-2xl font-bold">AROHAN Command Center</h1>
             <p className="text-xs sm:text-sm text-muted-foreground">Last updated: {new Date().toLocaleTimeString()}</p>
           </div>
           <div className="flex flex-wrap items-center gap-2 sm:gap-4">

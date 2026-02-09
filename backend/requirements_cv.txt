@@ -1,15 +1,15 @@
 # Computer Vision Backend Requirements
 flask==3.0.0
 flask-cors==4.0.0
-opencv-python==4.8.1.78
-numpy==1.24.3
-requests==2.31.0
+opencv-python
+numpy
+requests
 
-# For advanced face recognition
-face-recognition==1.3.0
+# For advanced face recognition (requires CMake - optional)
+# face-recognition
 
 # Firebase Admin SDK for automatic snapshot uploads
-firebase-admin==6.2.0
+firebase-admin
 
 # Optional: For deep learning models
 # tensorflow==2.13.0

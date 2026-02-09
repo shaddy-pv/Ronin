@@ -44,7 +44,7 @@ export const Sidebar = () => {
   return (
     <aside className="w-64 bg-card border-r border-border h-screen sticky top-0 flex flex-col">
       <div className="p-6 border-b border-border">
-        <h1 className="text-xl font-bold">RONIN</h1>
+        <h1 className="text-xl font-bold">AROHAN</h1>
         <p className="text-xs text-muted-foreground">Command Center</p>
       </div>
 

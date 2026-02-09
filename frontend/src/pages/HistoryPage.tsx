@@ -63,7 +63,7 @@ const HistoryPage = () => {
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `ronin-history-${Date.now()}.csv`;
+      link.download = `arohan-history-${Date.now()}.csv`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -89,7 +89,7 @@ const HistoryPage = () => {
     setExporting(true);
     try {
       // Create a simple text-based PDF content
-      let pdfContent = 'RONIN Historical Data Report\n';
+      let pdfContent = 'AROHAN Historical Data Report\n';
       pdfContent += `Generated: ${new Date().toLocaleString()}\n`;
       pdfContent += `Total Records: ${filteredHistory.length}\n\n`;
       pdfContent += '='.repeat(80) + '\n\n';
@@ -107,7 +107,7 @@ const HistoryPage = () => {
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `ronin-history-${Date.now()}.txt`;
+      link.download = `arohan-history-${Date.now()}.txt`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

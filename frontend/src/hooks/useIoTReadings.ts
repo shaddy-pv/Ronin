@@ -27,10 +27,10 @@ export interface IoTReadings {
 
 /**
  * Hook to subscribe to live IoT readings from Firebase Realtime Database
- * @param path - Database path to subscribe to (default: /ronin/iot)
+ * @param path - Database path to subscribe to (default: /arohan/iot)
  * @returns Object containing data, loading state, and error
  */
-export const useIoTReadings = (path: string = '/ronin/iot') => {
+export const useIoTReadings = (path: string = '/arohan/iot') => {
   const [data, setData] = useState<IoTReadings | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);

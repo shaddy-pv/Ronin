@@ -131,9 +131,9 @@ const { chartData, isRoverConnected } = useRealtimeChartData({
 ```
 Firebase Realtime Database
     ↓
-useIoTReadings() hook (subscribes to /ronin/iot)
+useIoTReadings() hook (subscribes to /AROHAN/iot)
     ↓
-useRoverSensors() hook (subscribes to /ronin/rover/sensors)
+useRoverSensors() hook (subscribes to /AROHAN/rover/sensors)
     ↓
 useRealtimeChartData() hook (combines both)
     ↓

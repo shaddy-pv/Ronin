@@ -1,4 +1,4 @@
-# 🚀 RONIN System - Quick Reference Card
+# 🚀 AROHAN System - Quick Reference Card
 
 ## 📊 Hazard Score Formula
 
@@ -59,20 +59,20 @@ frontend/src/components/RoverMissionStatus.tsx # Rover tracking
 ## 🔥 Firebase Paths
 
 ```
-/ronin/iot                    # Fixed IoT sensor data
-/ronin/rover/sensors          # Rover sensor data
-/ronin/rover/control          # Rover commands
-/ronin/rover/status           # Rover status
-/ronin/alerts                 # System alerts
-/ronin/history                # Historical logs
-/ronin/settings               # System settings
+/AROHAN/iot                    # Fixed IoT sensor data
+/AROHAN/rover/sensors          # Rover sensor data
+/AROHAN/rover/control          # Rover commands
+/AROHAN/rover/status           # Rover status
+/AROHAN/alerts                 # System alerts
+/AROHAN/history                # Historical logs
+/AROHAN/settings               # System settings
 ```
 
 ---
 
 ## 🎨 Sensor Data Structure
 
-### **Fixed IoT** (`/ronin/iot`):
+### **Fixed IoT** (`/AROHAN/iot`):
 ```json
 {
   "mq2": 450,              // PPM (continuous)
@@ -86,7 +86,7 @@ frontend/src/components/RoverMissionStatus.tsx # Rover tracking
 }
 ```
 
-### **Rover** (`/ronin/rover/sensors`):
+### **Rover** (`/AROHAN/rover/sensors`):
 ```json
 {
   "mq2": 420,              // PPM (continuous)

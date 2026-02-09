@@ -1,4 +1,4 @@
-# RONIN Command Center - Competition Checklist
+# AROHAN Command Center - Competition Checklist
 
 ## Pre-Competition Setup
 
@@ -13,8 +13,8 @@
 ### Firebase Setup
 - [ ] Firebase project created and configured
 - [ ] Database rules allow read/write
-- [ ] Fixed IoT sending to `/ronin/iot`
-- [ ] Rover sending to `/ronin/rover/sensors`
+- [ ] Fixed IoT sending to `/AROHAN/iot`
+- [ ] Rover sending to `/AROHAN/rover/sensors`
 - [ ] Historical data logging enabled
 
 ### Dashboard Verification
@@ -156,7 +156,7 @@
 ### Rover Shows N/A
 - [ ] Check rover power
 - [ ] Verify rover WiFi connection
-- [ ] Check Firebase path: `/ronin/rover/sensors`
+- [ ] Check Firebase path: `/AROHAN/rover/sensors`
 - [ ] Verify rover firmware is sending data
 - [ ] Check rover timestamp
 

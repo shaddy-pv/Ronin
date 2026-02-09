@@ -2,7 +2,7 @@
 
 ## Overview
 
-Complete system documentation and critical bug fixes for the RONIN IoT Monitoring System.
+Complete system documentation and critical bug fixes for the AROHAN IoT Monitoring System.
 
 ---
 
@@ -136,9 +136,9 @@ Created comprehensive 6-part documentation covering every aspect of the system:
    - Current direction
 
 4. **Firebase Integration**:
-   - Subscribes to `/ronin/rover/control`
-   - Subscribes to `/ronin/rover/status`
-   - Subscribes to `/ronin/alerts` for dispatch reasons
+   - Subscribes to `/AROHAN/rover/control`
+   - Subscribes to `/AROHAN/rover/status`
+   - Subscribes to `/AROHAN/alerts` for dispatch reasons
    - Real-time updates, no manual refresh
 
 #### **User Experience**:
@@ -236,7 +236,7 @@ Connection: Online  Direction: Stop
 ## 📁 File Structure
 
 ```
-ronin/
+AROHAN/
 ├── COMPLETE_SYSTEM_LOGIC_ANALYSIS.md (Master)
 ├── SYSTEM_LOGIC_PART1_SENSORS.md
 ├── SYSTEM_LOGIC_PART2_GRAPHS.md
@@ -407,7 +407,7 @@ ESP32/Arduino → Firebase → React Hooks → UI Components
 
 Today's session was highly productive with three major accomplishments:
 
-1. **Complete System Documentation**: Every aspect of the RONIN system is now thoroughly documented, making it easy for anyone to understand, maintain, and enhance the system.
+1. **Complete System Documentation**: Every aspect of the AROHAN system is now thoroughly documented, making it easy for anyone to understand, maintain, and enhance the system.
 
 2. **Critical Bug Fix**: The sensor detail drawer charts now work perfectly, displaying both Fixed IoT and Rover data immediately with a smart fallback mechanism.
 

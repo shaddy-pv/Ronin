@@ -111,7 +111,7 @@ const Login = () => {
       
       <div className="w-full max-w-md p-8 bg-card border border-border rounded-lg relative z-10">
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold mb-2">RONIN</h1>
+          <h1 className="text-3xl font-bold mb-2">AROHAN</h1>
           <p className="text-muted-foreground">Command Center</p>
         </div>
 
@@ -123,7 +123,7 @@ const Login = () => {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="operator@ronin.com"
+              placeholder="operator@arohan.com"
               required
             />
           </div>

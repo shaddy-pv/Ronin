@@ -1,6 +1,6 @@
 {
-  "name": "ronin-functions",
-  "description": "Firebase Cloud Functions for RONIN Safety Monitoring System",
+  "name": "arohan-functions",
+  "description": "Firebase Cloud Functions for AROHAN Safety Monitoring System",
   "version": "1.0.0",
   "scripts": {
     "serve": "firebase emulators:start --only functions",

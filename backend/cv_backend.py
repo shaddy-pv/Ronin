@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-RONIN Rover Computer Vision Backend
+AROHAN Rover Computer Vision Backend
 Provides face recognition and accident detection for ESP32-CAM feeds
 """
 
@@ -112,8 +112,8 @@ class CVBackend:
             # Initialize Firebase
             cred = credentials.Certificate(service_account_path)
             firebase_admin.initialize_app(cred, {
-                'storageBucket': 'ronin-rover.firebasestorage.app',
-                'databaseURL': 'https://ronin-rover-default-rtdb.firebaseio.com'
+                'storageBucket': 'arohan-rover.firebasestorage.app',
+                'databaseURL': 'https://arohan-rover-default-rtdb.firebaseio.com'
             })
             
             self.firebase_initialized = True
@@ -267,7 +267,7 @@ class CVBackend:
         
         try:
             bucket = storage.bucket()
-            blob = bucket.blob(f'ronin/snapshots/{snapshot_filename}')
+            blob = bucket.blob(f'arohan/snapshots/{snapshot_filename}')
             
             # Upload file
             blob.upload_from_filename(str(snapshot_path))
@@ -288,7 +288,7 @@ class CVBackend:
             return
         
         try:
-            ref = db.reference('ronin/alerts')
+            ref = db.reference('arohan/alerts')
             ref.push(asdict(alert))
             print(f"✅ Alert saved to Firebase: {alert.type}")
             

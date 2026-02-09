@@ -1,4 +1,4 @@
-# RONIN - Autonomous Safety Monitoring System
+# AROHAN - Autonomous Safety Monitoring System
 
 An autonomous safety system combining fixed IoT safety nodes and an autonomous rover for hazardous condition detection and verification.
 
@@ -7,7 +7,7 @@ An autonomous safety system combining fixed IoT safety nodes and an autonomous r
 This project is organized into three main directories:
 
 ```
-ronin/
+arohan/
 ├── frontend/     # React/TypeScript web application
 ├── backend/      # Backend services and APIs
 └── server/       # Server-side code and WebSocket handlers
@@ -55,7 +55,7 @@ _Implementation coming soon..._
 
 ## 📡 System Architecture
 
-RONIN consists of:
+AROHAN consists of:
 
 1. **Fixed IoT Safety Node** (ESP8266)
    - Monitors MQ-2, MQ-135, DHT11, Flame, PIR sensors
@@ -80,7 +80,7 @@ All components communicate through **Firebase Realtime Database**.
 ## 🔥 Firebase Structure
 
 ```
-/ronin
+/arohan
    /iot                                    ← ✅ LIVE DATA CONNECTED
       mq2: number                          (Gas sensor 0-1023)
       mq135: number                        (Air quality 400-1000)
@@ -105,7 +105,7 @@ All components communicate through **Firebase Realtime Database**.
 
 ## 📊 Hazard Score Model
 
-RONIN uses a mathematical model to compute hazard level:
+AROHAN uses a mathematical model to compute hazard level:
 
 1. **Normalization** (0–100): `Norm = 100 * (Rx - Rmin) / (Rmax - Rmin)`
 2. **Weighted Score**: `HazardScore = (0.6 * Norm(MQ135)) + (0.3 * Norm(MQ2)) + (0.1 * Norm(Temperature))`

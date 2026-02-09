@@ -33,7 +33,7 @@ const SettingsPage = () => {
 
   // System info state
   const [systemInfo, setSystemInfo] = useState({
-    deviceId: 'RONIN-UNIT-001',
+    deviceId: 'AROHAN-UNIT-001',
     roverId: 'ROVER-ALPHA-01',
     firmwareVersion: 'v2.4.1',
     lastSystemCheck: new Date().toISOString()
@@ -61,7 +61,7 @@ const SettingsPage = () => {
 
   // Load system info from Firebase
   useEffect(() => {
-    const systemInfoRef = ref(database, 'ronin/systemInfo');
+    const systemInfoRef = ref(database, 'arohan/systemInfo');
     const unsubscribe = () => {}; // Placeholder for actual listener
     
     // In production, this would be a real-time listener
@@ -192,7 +192,7 @@ const SettingsPage = () => {
       });
 
       // Update hazard score for demo
-      const iotRef = ref(database, 'ronin/iot');
+      const iotRef = ref(database, 'arohan/iot');
       await update(iotRef, {
         mq2: 650,
         mq135: 850,
@@ -223,7 +223,7 @@ const SettingsPage = () => {
       });
 
       // Update hazard score for demo
-      const iotRef = ref(database, 'ronin/iot');
+      const iotRef = ref(database, 'arohan/iot');
       await update(iotRef, {
         flame: true,
         temperature: 38,
@@ -265,7 +265,7 @@ const SettingsPage = () => {
         }
       };
 
-      const settingsRef = ref(database, 'ronin/settings');
+      const settingsRef = ref(database, 'arohan/settings');
       await set(settingsRef, defaultSettings);
 
       toast({

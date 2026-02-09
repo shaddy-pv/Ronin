@@ -59,7 +59,7 @@ const CameraTest: React.FC = () => {
             <h3 className="font-semibold mb-2">Integration Notes</h3>
             <div className="text-sm text-muted-foreground space-y-2">
               <p>
-                This page demonstrates the ESP32-CAM integration with the RONIN dashboard. 
+                This page demonstrates the ESP32-CAM integration with the AROHAN dashboard. 
                 The camera service connects to your ESP32-CAM device and provides live streaming 
                 with face detection capabilities.
               </p>
@@ -69,11 +69,11 @@ const CameraTest: React.FC = () => {
               </p>
               <p>
                 <strong>CV Overlay:</strong> Write bounding box data to Firebase path 
-                <code className="bg-secondary px-1 rounded">/ronin/rover/cv</code> to see overlays.
+                <code className="bg-secondary px-1 rounded">/arohan/rover/cv</code> to see overlays.
               </p>
               <p>
                 <strong>Snapshots:</strong> Saved to Firebase Storage at 
-                <code className="bg-secondary px-1 rounded">/ronin/snapshots/</code> with metadata 
+                <code className="bg-secondary px-1 rounded">/arohan/snapshots/</code> with metadata 
                 in Realtime Database.
               </p>
             </div>

@@ -1,4 +1,4 @@
-# RONIN CV Backend - Face Recognition Service
+# AROHAN CV Backend - Face Recognition Service
 
 **Purpose**: Computer Vision backend for ESP32-CAM face recognition and accident detection
 

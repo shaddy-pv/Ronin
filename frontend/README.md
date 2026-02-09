@@ -1,6 +1,6 @@
-# RONIN Frontend
+# AROHAN Frontend
 
-React/TypeScript web application for the RONIN autonomous safety monitoring system.
+React/TypeScript web application for the AROHAN autonomous safety monitoring system.
 
 ## Technologies
 
@@ -21,7 +21,7 @@ frontend/
 ├── src/
 │   ├── components/   # React components
 │   │   ├── ui/       # shadcn/ui components
-│   │   └── ...       # Custom RONIN components
+│   │   └── ...       # Custom AROHAN components
 │   ├── pages/        # Page components
 │   ├── hooks/        # Custom React hooks
 │   ├── lib/          # Utility functions

@@ -1,4 +1,4 @@
-# Implementation Summary - RONIN Command Center
+# Implementation Summary - AROHAN Command Center
 
 ## What Was Changed
 
@@ -77,7 +77,7 @@
 
 ```json
 {
-  "ronin": {
+  "AROHAN": {
     "rover": {
       "sensors": {
         "mq2": 250,

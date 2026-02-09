@@ -85,7 +85,7 @@ class ClientMonitoringService {
    * Monitor IoT readings for hazardous conditions
    */
   private monitorHazards() {
-    const iotRef = ref(database, 'ronin/iot');
+    const iotRef = ref(database, 'arohan/iot');
 
     const unsubscribe = onValue(iotRef, (snapshot) => {
       const data = snapshot.val();
@@ -201,7 +201,7 @@ class ClientMonitoringService {
    * Monitor rover battery levels
    */
   private monitorBattery() {
-    const batteryRef = ref(database, 'ronin/rover/status/battery');
+    const batteryRef = ref(database, 'arohan/rover/status/battery');
 
     const unsubscribe = onValue(batteryRef, (snapshot) => {
       const battery = snapshot.val();
@@ -251,7 +251,7 @@ class ClientMonitoringService {
    * Monitor IoT node connection status
    */
   private monitorConnection() {
-    const onlineRef = ref(database, 'ronin/iot/status/online');
+    const onlineRef = ref(database, 'arohan/iot/status/online');
 
     const unsubscribe = onValue(onlineRef, (snapshot) => {
       const online = snapshot.val();
@@ -312,7 +312,7 @@ class ClientMonitoringService {
    */
   private async logHistory() {
     try {
-      const iotSnapshot = await get(ref(database, 'ronin/iot'));
+      const iotSnapshot = await get(ref(database, 'arohan/iot'));
       const data = iotSnapshot.val();
 
       if (!data) {
@@ -335,7 +335,7 @@ class ClientMonitoringService {
         )
       };
 
-      await push(ref(database, 'ronin/history'), historyEntry);
+      await push(ref(database, 'arohan/history'), historyEntry);
       console.log('[ClientMonitoring] ✓ History entry logged');
 
       // Clean up old history (keep last 1000)
@@ -350,7 +350,7 @@ class ClientMonitoringService {
    */
   private async cleanupHistory() {
     try {
-      const historySnapshot = await get(ref(database, 'ronin/history'));
+      const historySnapshot = await get(ref(database, 'arohan/history'));
       const historyData = historySnapshot.val();
 
       if (!historyData) return;
@@ -363,7 +363,7 @@ class ClientMonitoringService {
 
         const updates: any = {};
         toDelete.forEach(([key]) => {
-          updates[`ronin/history/${key}`] = null;
+          updates[`arohan/history/${key}`] = null;
         });
 
         await set(ref(database), updates);
@@ -385,7 +385,7 @@ class ClientMonitoringService {
         resolved: false
       };
 
-      await push(ref(database, 'ronin/alerts'), alertData);
+      await push(ref(database, 'arohan/alerts'), alertData);
       console.log('[ClientMonitoring] ✓ Alert created:', alertData.type);
     } catch (error) {
       console.error('[ClientMonitoring] Error creating alert:', error);
@@ -397,7 +397,7 @@ class ClientMonitoringService {
    */
   private async checkAutoDispatch(hazardScore: number) {
     try {
-      const settingsSnapshot = await get(ref(database, 'ronin/settings/roverBehavior'));
+      const settingsSnapshot = await get(ref(database, 'arohan/settings/roverBehavior'));
       const roverBehavior = settingsSnapshot.val();
 
       if (roverBehavior && roverBehavior.autoDispatchEnabled) {
@@ -406,7 +406,7 @@ class ClientMonitoringService {
         const dispatchTime = Date.now();
 
         // Set rover control to auto mode
-        await set(ref(database, 'ronin/rover/control'), {
+        await set(ref(database, 'arohan/rover/control'), {
           mode: 'auto',
           direction: 'forward',
           speed: 50,
@@ -414,7 +414,7 @@ class ClientMonitoringService {
         });
 
         // Create mission record in Firebase
-        await set(ref(database, 'ronin/rover/mission'), {
+        await set(ref(database, 'arohan/rover/mission'), {
           status: 'DISPATCHED',
           dispatchedAt: dispatchTime,
           reason: `High hazard score detected (${hazardScore.toFixed(1)}/100)`,
@@ -448,11 +448,11 @@ class ClientMonitoringService {
    */
   private async checkAutoReturn() {
     try {
-      const settingsSnapshot = await get(ref(database, 'ronin/settings/roverBehavior/returnToBaseAfterCheck'));
+      const settingsSnapshot = await get(ref(database, 'arohan/settings/roverBehavior/returnToBaseAfterCheck'));
       const returnToBase = settingsSnapshot.val();
 
       if (returnToBase === true) {
-        await set(ref(database, 'ronin/rover/control'), {
+        await set(ref(database, 'arohan/rover/control'), {
           mode: 'auto',
           direction: 'back',
           speed: 30,

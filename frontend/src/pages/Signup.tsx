@@ -129,7 +129,7 @@ const Signup = () => {
           <>
             <div className="mb-8 text-center">
               <h1 className="text-3xl font-bold mb-2">Create Account</h1>
-              <p className="text-muted-foreground">Join RONIN Command Center</p>
+              <p className="text-muted-foreground">Join AROHAN Command Center</p>
             </div>
 
             <form onSubmit={handleSignup} className="space-y-6">
@@ -152,7 +152,7 @@ const Signup = () => {
               type="email"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              placeholder="operator@ronin.com"
+              placeholder="operator@arohan.com"
               required
             />
           </div>

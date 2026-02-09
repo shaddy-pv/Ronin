@@ -118,13 +118,13 @@ The drawer already had the correct chart configuration to show both Fixed IoT an
 ```
 Firebase Realtime Database
     ↓
-/ronin/iot (Fixed IoT Node)
+/AROHAN/iot (Fixed IoT Node)
     ├── mq2: number (PPM)
     ├── mq135_digital: 0 | 1 (Binary threshold)
     ├── temperature: number (°C)
     └── humidity: number (%)
     ↓
-/ronin/rover/sensors (Rover Node)
+/AROHAN/rover/sensors (Rover Node)
     ├── mq2: number (PPM)
     ├── mq135: number (Continuous PPM)
     ├── temperature: number (°C)
@@ -215,7 +215,7 @@ Each data point contains:
 
 ## Firebase Data Requirements
 
-### Fixed IoT Node (`/ronin/iot`):
+### Fixed IoT Node (`/AROHAN/iot`):
 ```json
 {
   "mq2": 450,
@@ -228,7 +228,7 @@ Each data point contains:
 }
 ```
 
-### Rover Node (`/ronin/rover/sensors`):
+### Rover Node (`/AROHAN/rover/sensors`):
 ```json
 {
   "mq2": 420,

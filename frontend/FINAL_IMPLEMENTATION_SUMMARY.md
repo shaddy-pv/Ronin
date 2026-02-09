@@ -1,8 +1,8 @@
-# RONIN Command Center - Final Implementation Summary
+# AROHAN Command Center - Final Implementation Summary
 
 ## ✅ Completed: MQ-135 Dual Configuration
 
-Your RONIN Command Center now supports a **dual MQ-135 configuration** that perfectly matches your hardware setup:
+Your AROHAN Command Center now supports a **dual MQ-135 configuration** that perfectly matches your hardware setup:
 
 ### Hardware Configuration
 - **Fixed IoT Node**: MQ-135 wired to **digital output** → Binary (0/1)
@@ -55,7 +55,7 @@ HazardScore = (0.6 × effectiveMQ135) + (0.3 × MQ2) + (0.1 × Temp)
    - `calculateHazardContribution()` - Uses effective value
 
 3. **`frontend/src/hooks/useRoverSensors.ts`**
-   - Subscribes to `/ronin/rover/sensors`
+   - Subscribes to `/AROHAN/rover/sensors`
    - Returns rover sensor data including continuous MQ-135
 
 ### UI Components
@@ -97,7 +97,7 @@ HazardScore = (0.6 × effectiveMQ135) + (0.3 × MQ2) + (0.1 × Temp)
 ### Fixed IoT Node (Existing)
 ```json
 {
-  "ronin": {
+  "AROHAN": {
     "iot": {
       "mq2": 250,
       "mq135_digital": 0,  // Binary: 0 or 1 (PRIMARY for fixed)
@@ -113,7 +113,7 @@ HazardScore = (0.6 × effectiveMQ135) + (0.3 × MQ2) + (0.1 × Temp)
 ### Rover Node (New)
 ```json
 {
-  "ronin": {
+  "AROHAN": {
     "rover": {
       "sensors": {
         "mq2": 250,
@@ -132,7 +132,7 @@ HazardScore = (0.6 × effectiveMQ135) + (0.3 × MQ2) + (0.1 × Temp)
 ### 1. Fixed IoT Node (No Changes Needed)
 Your existing fixed IoT node continues to work as-is:
 - MQ-135 digital output → 0 or 1
-- Sends to `/ronin/iot/mq135_digital`
+- Sends to `/AROHAN/iot/mq135_digital`
 - No rewiring required ✅
 
 ### 2. Rover Node (Add Analog Data)
@@ -143,7 +143,7 @@ int mq135_analog = analogRead(MQ135_PIN);  // Read analog value
 float mq135_ppm = map(mq135_analog, 0, 1023, 0, 1000);  // Convert to PPM
 
 // Send to Firebase
-Firebase.setFloat(firebaseData, "/ronin/rover/sensors/mq135", mq135_ppm);
+Firebase.setFloat(firebaseData, "/AROHAN/rover/sensors/mq135", mq135_ppm);
 ```
 
 ### 3. View in Dashboard
@@ -219,7 +219,7 @@ The dual configuration provides a clear verification narrative:
 
 ## What You DO Need to Do
 
-✅ **Configure rover to send analog MQ-135** to `/ronin/rover/sensors/mq135`
+✅ **Configure rover to send analog MQ-135** to `/AROHAN/rover/sensors/mq135`
 ✅ **Test with real data** - Verify readings make sense
 ✅ **Check comparison chart** - Ensure both lines appear
 
@@ -272,7 +272,7 @@ When presenting to judges, highlight:
 ## Troubleshooting
 
 ### Rover Shows N/A
-- Check Firebase path: `/ronin/rover/sensors`
+- Check Firebase path: `/AROHAN/rover/sensors`
 - Verify rover is online
 - Check `useRoverSensors()` hook in browser console
 

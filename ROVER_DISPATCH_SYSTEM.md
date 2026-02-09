@@ -17,7 +17,7 @@ I've implemented a **complete, working rover dispatch and mission tracking syste
 
 ## Firebase Structure
 
-### **Path**: `/ronin/rover/mission`
+### **Path**: `/AROHAN/rover/mission`
 
 ```json
 {
@@ -153,7 +153,7 @@ if (distanceToTarget < 1.0) { // meters
 └────────────────────────┬────────────────────────────────────┘
                          ↓
 ┌─────────────────────────────────────────────────────────────┐
-│ Firebase: /ronin/rover/mission                               │
+│ Firebase: /AROHAN/rover/mission                               │
 │ { state: "ARRIVED", arrivedAt: 1701234580000, ... }        │
 └────────────────────────┬────────────────────────────────────┘
                          ↓
@@ -177,7 +177,7 @@ if (distanceToTarget < 1.0) { // meters
 **In RoverMissionStatus.tsx**:
 ```typescript
 useEffect(() => {
-  const missionRef = ref(database, 'ronin/rover/mission');
+  const missionRef = ref(database, 'AROHAN/rover/mission');
   const unsubscribe = onValue(missionRef, (snapshot) => {
     const data = snapshot.val();
     if (data) {
@@ -224,7 +224,7 @@ useEffect(() => {
    - Added mission state display
 
 2. **`frontend/src/components/RoverMissionStatus.tsx`**
-   - Updated to use `/ronin/rover/mission` path
+   - Updated to use `/AROHAN/rover/mission` path
    - Real-time mission tracking
    - Status badge updates
 
@@ -407,7 +407,7 @@ unsubscribe();
 2. [ ] Verify Mission Control card shows "Status: IDLE"
 3. [ ] Click "Dispatch Rover"
 4. [ ] Verify status changes to "DISPATCHED"
-5. [ ] Check Firebase: `/ronin/rover/mission/state` should be "DISPATCHED"
+5. [ ] Check Firebase: `/AROHAN/rover/mission/state` should be "DISPATCHED"
 6. [ ] Open Dashboard in another tab
 7. [ ] Verify Rover Mission Status card shows "Dispatched"
 
@@ -415,7 +415,7 @@ unsubscribe();
 1. [ ] With rover in DISPATCHED state
 2. [ ] Click "Mark as Arrived"
 3. [ ] Verify status changes to "ARRIVED"
-4. [ ] Check Firebase: `/ronin/rover/mission/state` should be "ARRIVED"
+4. [ ] Check Firebase: `/AROHAN/rover/mission/state` should be "ARRIVED"
 5. [ ] Verify Dashboard shows "Arrived at Site"
 6. [ ] Verify arrival timestamp displays
 
@@ -503,7 +503,7 @@ await logMissionHistory({
 ### **4. Multiple Rovers**:
 ```typescript
 // Support multiple rovers
-/ronin/rovers/
+/AROHAN/rovers/
   ├── rover-01/mission
   ├── rover-02/mission
   └── rover-03/mission
@@ -515,7 +515,7 @@ await logMissionHistory({
 
 ### **What Was Implemented**:
 
-1. ✅ **Firebase Structure**: `/ronin/rover/mission` with complete state management
+1. ✅ **Firebase Structure**: `/AROHAN/rover/mission` with complete state management
 2. ✅ **Mission Service**: `roverMissionService.ts` with all CRUD operations
 3. ✅ **Dispatch Button**: In Rover Console to manually dispatch rover
 4. ✅ **Arrival Button**: In Rover Console to mark rover as arrived
@@ -531,7 +531,7 @@ User clicks "Dispatch Rover"
     ↓
 dispatchRover() called
     ↓
-Firebase /ronin/rover/mission updated
+Firebase /AROHAN/rover/mission updated
     ↓
 onValue() listeners triggered
     ↓

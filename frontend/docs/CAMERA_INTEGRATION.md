@@ -1,6 +1,6 @@
 # ESP32-CAM Integration Guide
 
-This document explains how the RONIN dashboard integrates with ESP32-CAM for live video streaming and face recognition capabilities.
+This document explains how the AROHAN dashboard integrates with ESP32-CAM for live video streaming and face recognition capabilities.
 
 ## Overview
 

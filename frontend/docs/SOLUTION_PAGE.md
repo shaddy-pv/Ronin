@@ -1,7 +1,7 @@
 # AI Hazard Solution Page
 
 ## Overview
-The Solution page provides AI-powered hazard analysis and safety recommendations based on real-time sensor data from your RONIN IoT nodes.
+The Solution page provides AI-powered hazard analysis and safety recommendations based on real-time sensor data from your AROHAN IoT nodes.
 
 ## Features
 
@@ -45,7 +45,7 @@ VITE_GEMINI_API_KEY=your_actual_gemini_api_key_here
 ```
 
 ### 3. Access the Page
-Navigate to `/solution` in your RONIN dashboard or click "Solution" in the sidebar.
+Navigate to `/solution` in your AROHAN dashboard or click "Solution" in the sidebar.
 
 ## Usage
 
@@ -68,7 +68,7 @@ Firebase (IoT Readings) → SolutionPage → Gemini API → Parsed Solution → 
 ```
 
 ### Firebase Path
-Reads from: `/ronin/iot/<currentZone>/sensors`
+Reads from: `/AROHAN/iot/<currentZone>/sensors`
 
 ### Security
 - API key stored in environment variables
