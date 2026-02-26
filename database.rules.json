@@ -3,11 +3,18 @@
     "arohan": {
       ".read": "auth != null",
       ".write": "auth != null",
+
       "iot": {
+        ".read": "auth != null",
+        ".write": "auth != null",
         ".indexOn": ["hazardScore", "status/lastHeartbeat"],
-        ".validate": "newData.hasChildren(['mq2', 'mq135', 'temperature', 'humidity', 'hazardScore'])"
+        ".validate": "newData.hasChildren(['mq2','mq135','temperature','humidity','hazardScore'])"
       },
+
       "rover": {
+        ".read": "auth != null",
+        ".write": "auth != null",
+
         "control": {
           ".indexOn": ["mode", "direction"]
         },
@@ -19,16 +26,24 @@
           ".write": "auth != null"
         }
       },
+
       "alerts": {
+        ".read": "auth != null",
+        ".write": "auth != null",
         ".indexOn": ["timestamp", "severity", "resolved"]
       },
+
       "history": {
+        ".read": "auth != null",
+        ".write": "auth != null",
         ".indexOn": ["timestamp", "riskLevel"]
       },
+
       "settings": {
         ".read": "auth != null",
         ".write": "auth != null"
       },
+
       "systemInfo": {
         ".read": "auth != null",
         ".write": "auth != null"
