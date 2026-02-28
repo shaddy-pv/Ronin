@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getDatabase, ref, onValue, off } from 'firebase/database';
+import { getAuth } from 'firebase/auth';
 import { database } from '@/lib/firebase';
 import { logger } from '@/lib/logger';
 
@@ -27,15 +28,48 @@ export interface IoTReadings {
 
 /**
  * Hook to subscribe to live IoT readings from Firebase Realtime Database
- * @param path - Database path to subscribe to (default: /arohan/iot)
+ * @param path - Database path to subscribe to (default: /ronin/iot)
  * @returns Object containing data, loading state, and error
  */
-export const useIoTReadings = (path: string = '/arohan/iot') => {
+export const useIoTReadings = (path: string = '/ronin/iot') => {
   const [data, setData] = useState<IoTReadings | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [authReady, setAuthReady] = useState(false);
+
+  // Wait for auth state to be ready
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setAuthReady(true);
+      if (!user) {
+        console.debug('[useIoTReadings] User not authenticated');
+        setLoading(false);
+        setError(new Error('User not authenticated'));
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
+    // Wait for auth to be ready
+    if (!authReady) {
+      return;
+    }
+
+    // Check if user is authenticated
+    const auth = getAuth();
+    const currentUser = auth.currentUser;
+
+    if (!currentUser) {
+      console.debug('[useIoTReadings] User not authenticated, skipping data fetch');
+      setLoading(false);
+      setError(new Error('User not authenticated'));
+      return;
+    }
+
+    console.debug('[useIoTReadings] User authenticated, fetching data for:', currentUser.email);
     setLoading(true);
     setError(null);
 
@@ -50,8 +84,9 @@ export const useIoTReadings = (path: string = '/arohan/iot') => {
           const val = snapshot.val();
 
           if (!val) {
-            console.debug('[useIoTReadings] No data found at path:', path);
-            setData(null);
+            // Don't clear data immediately - keep showing last known values
+            // This prevents blank screens when IoT device is temporarily offline
+            console.debug('[useIoTReadings] No data found at path:', path, '- keeping last known values');
             setLoading(false);
             return;
           }
@@ -132,7 +167,7 @@ export const useIoTReadings = (path: string = '/arohan/iot') => {
       setError(err as Error);
       setLoading(false);
     }
-  }, [path]);
+  }, [path, authReady]); // Removed 'data' from dependencies to prevent infinite loop
 
   return { data, loading, error };
 };

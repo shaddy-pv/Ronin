@@ -1,137 +1,258 @@
 # AROHAN - Autonomous Safety Monitoring System
 
-An autonomous safety system combining fixed IoT safety nodes and an autonomous rover for hazardous condition detection and verification.
+[![Status](https://img.shields.io/badge/status-production-green)]()
+[![Version](https://img.shields.io/badge/version-1.0.0-blue)]()
+[![License](https://img.shields.io/badge/license-MIT-orange)]()
 
-## 🏗️ Project Structure
+Real-time IoT safety monitoring system with computer vision, face recognition, and autonomous rover control.
 
-This project is organized into three main directories:
-
-```
-arohan/
-├── frontend/     # React/TypeScript web application
-├── backend/      # Backend services and APIs
-└── server/       # Server-side code and WebSocket handlers
-```
-
-### Frontend
-React web application with dashboard, rover console, alerts, and settings pages.
-- **Location**: `frontend/`
-- **Tech Stack**: React, TypeScript, Vite, shadcn/ui, Tailwind CSS, Firebase SDK v9
-- **Status**: ✅ **Live IoT Data Integration Complete**
-- **See**: [frontend/README.md](./frontend/README.md)
-- **Quick Start**: [frontend/QUICK_START_IOT.md](./frontend/QUICK_START_IOT.md)
-
-### Backend
-Backend services for data processing, business logic, and API endpoints.
-- **Location**: `backend/`
-- **See**: [backend/README.md](./backend/README.md)
-
-### Server
-Server-side code for WebSocket connections, authentication, and middleware.
-- **Location**: `server/`
-- **See**: [server/README.md](./server/README.md)
+---
 
 ## 🚀 Quick Start
 
-### Frontend Development
+```bash
+# Clone repository
+git clone <repository-url>
+cd ronin
+
+# Install dependencies
+cd frontend && npm install
+cd ../backend && pip install -r requirements_cv.txt
+
+# Configure environment
+cp frontend/.env.example frontend/.env
+# Edit frontend/.env with your Firebase credentials
+
+# Deploy Firebase rules
+firebase deploy --only database
+
+# Start services
+cd frontend && npm run dev          # Terminal 1
+cd backend && python start_cv_backend.py  # Terminal 2
+```
+
+**Access**: http://localhost:8080
+
+📖 **Full Documentation**: [docs/README.md](docs/README.md)
+
+---
+
+## ✨ Features
+
+- **Real-Time Monitoring**: Live sensor data visualization with hazard score calculation
+- **Computer Vision**: Face detection, recognition, and accident detection
+- **Rover Control**: Manual and autonomous modes with live camera streaming
+- **Alert System**: Automated alert generation with severity classification
+- **Historical Analysis**: Data logging and trend analysis
+- **Responsive UI**: Modern dashboard with dark/light themes
+
+---
+
+## 🏗️ Architecture
+
+```
+Frontend (React + Vite) ←→ Firebase Cloud ←→ Backend (Flask CV)
+                                ↕
+                          ESP32-CAM + IoT Sensors
+```
+
+**Components**:
+- **Frontend**: React 18, TypeScript, Shadcn/ui, Tailwind CSS
+- **Backend**: Python 3.13, Flask 3.0, OpenCV 4.12
+- **Database**: Firebase Realtime Database
+- **Auth**: Firebase Authentication
+- **Hardware**: ESP32-CAM, MQ2, MQ135, DHT, Flame, Motion sensors
+
+---
+
+## 📊 System Requirements
+
+- Node.js 18+
+- Python 3.8+
+- Firebase CLI
+- Git
+
+**Optional**:
+- ESP32-CAM module
+- IoT sensors (MQ2, MQ135, DHT, Flame, PIR)
+
+---
+
+## 📚 Documentation
+
+### Getting Started
+- [Quick Start Guide](docs/setup/QUICK_START.md)
+- [Installation Guide](docs/setup/INSTALLATION.md)
+- [Configuration Guide](docs/setup/CONFIGURATION.md)
+
+### Architecture
+- [System Overview](docs/architecture/SYSTEM_OVERVIEW.md)
+- [Technology Stack](docs/architecture/TECH_STACK.md)
+- [Database Schema](docs/architecture/DATABASE_SCHEMA.md)
+
+### Troubleshooting
+- [Common Issues](docs/troubleshooting/COMMON_ISSUES.md)
+- [Debug Guide](docs/troubleshooting/DEBUG_GUIDE.md)
+- [FAQ](docs/troubleshooting/FAQ.md)
+
+---
+
+## 🎯 Project Structure
+
+```
+ronin/
+├── frontend/           # React application
+│   ├── src/
+│   │   ├── components/ # React components
+│   │   ├── pages/      # Page components
+│   │   ├── hooks/      # Custom hooks
+│   │   ├── lib/        # Utilities
+│   │   └── contexts/   # React contexts
+│   └── package.json
+├── backend/            # Python CV backend
+│   ├── cv_backend.py   # Main backend
+│   ├── known_faces/    # Face recognition
+│   └── static/         # Snapshots
+├── docs/               # Documentation
+├── firebase.json       # Firebase config
+└── database.rules.json # Security rules
+```
+
+---
+
+## 🔧 Development
+
+### Start Development Servers
 
 ```bash
+# Frontend (http://localhost:8080)
 cd frontend
-npm install
 npm run dev
+
+# Backend (http://localhost:5000)
+cd backend
+python start_cv_backend.py
 ```
 
-The frontend will be available at `http://localhost:5173`
+### Build for Production
 
-**New**: The dashboard now displays **live IoT sensor data** from Firebase Realtime Database!
-- Real-time updates with <1s latency
-- Automatic hazard alerts
-- Color-coded risk levels
-- See [QUICK_START_IOT.md](./frontend/QUICK_START_IOT.md) for testing guide
+```bash
+# Build frontend
+cd frontend
+npm run build
 
-### Backend & Server
-
-_Implementation coming soon..._
-
-## 📡 System Architecture
-
-AROHAN consists of:
-
-1. **Fixed IoT Safety Node** (ESP8266)
-   - Monitors MQ-2, MQ-135, DHT11, Flame, PIR sensors
-   - Calculates weighted Hazard Score (0-100)
-   - Sends live readings to Firebase
-   - Activates emergency protocols
-
-2. **Autonomous Rover** (ESP32-CAM)
-   - Responds to hazardous conditions
-   - Streams live camera feed
-   - Sends sensor readings
-   - Controlled manually or automatically via Firebase
-
-3. **Web Application** (React)
-   - Dashboard with risk cards and graphs
-   - Rover console with live camera + controls
-   - Alerts page + History logs
-   - Settings page for thresholds
-
-All components communicate through **Firebase Realtime Database**.
-
-## 🔥 Firebase Structure
-
-```
-/arohan
-   /iot                                    ← ✅ LIVE DATA CONNECTED
-      mq2: number                          (Gas sensor 0-1023)
-      mq135: number                        (Air quality 400-1000)
-      mq135_raw: 0|1                       (Digital reading)
-      mq135_digital: 0|1                   (Threshold trigger)
-      temperature: number                  (°C)
-      humidity: number                     (%)
-      flame: boolean                       (Fire detected)
-      motion: boolean                      (Motion detected)
-      hazardScore: number                  (0-100)
-      riskLevel: "SAFE"|"WARNING"|"DANGER"
-      status: { online, lastHeartbeat }
-      emergency: { active, timestamp }
-   /rover
-      control: { direction, speed, mode, emergency }
-      status: { battery, location, online }
-   /alerts
-      alertId: { timestamp, type, severity, summary, resolved }
-   /history
-      logId: { timestamp, mq2, mq135, temperature, flame, motion, hazardScore, riskLevel }
+# Deploy to Firebase
+firebase deploy
 ```
 
-## 📊 Hazard Score Model
+---
 
-AROHAN uses a mathematical model to compute hazard level:
+## 🧪 Testing
 
-1. **Normalization** (0–100): `Norm = 100 * (Rx - Rmin) / (Rmax - Rmin)`
-2. **Weighted Score**: `HazardScore = (0.6 * Norm(MQ135)) + (0.3 * Norm(MQ2)) + (0.1 * Norm(Temperature))`
-3. **Zones**: 0–30 = SAFE, 30–60 = WARNING, 60–100 = DANGER
+```bash
+# Frontend tests
+cd frontend
+npm run test
 
-## ✨ Latest Features
+# Backend health check
+curl http://localhost:5000/health
 
-### 🔴 Live IoT Data Integration (November 2025)
-- ✅ Real-time sensor data streaming from Firebase
-- ✅ Sub-second update latency via WebSocket
-- ✅ Automatic hazard alerts (WARNING/DANGER)
-- ✅ Color-coded risk visualization
-- ✅ Loading, error, and no-data states
-- ✅ Dev testing tools and smoke tests
-- ✅ Comprehensive documentation
+# Firebase connection test
+firebase projects:list
+```
 
-**See**: [Complete Guide](./COMPLETE_GUIDE.md) - Everything you need in one place!
+---
 
-## 🛠️ Technologies
+## 📦 Deployment
 
-- **Frontend**: React, TypeScript, Vite, shadcn/ui, Tailwind CSS, Recharts, Firebase SDK v9
-- **Backend**: _Coming soon_
-- **Server**: _Coming soon_
-- **Database**: Firebase Realtime Database (WebSocket)
-- **IoT**: ESP8266, ESP32-CAM
+### Firebase Hosting
 
-## 📄 License
+```bash
+# Build and deploy
+cd frontend
+npm run build
+firebase deploy --only hosting
 
-_To be determined_
+# Deploy database rules
+firebase deploy --only database
+```
+
+### Backend Deployment
+
+```bash
+# Deploy to VPS/Cloud
+# 1. Install dependencies
+# 2. Configure environment
+# 3. Start with process manager (PM2, systemd)
+```
+
+---
+
+## 🔐 Security
+
+- Firebase Authentication (Email/Password)
+- Database security rules
+- HTTPS only in production
+- Environment variables for secrets
+- CORS configured
+
+---
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit changes (`git commit -m 'Add AmazingFeature'`)
+4. Push to branch (`git push origin feature/AmazingFeature`)
+5. Open Pull Request
+
+---
+
+## 📝 License
+
+This project is licensed under the MIT License - see LICENSE file for details.
+
+---
+
+## 👥 Team
+
+- **Shadan** - Developer
+- **Shivam** - Developer
+
+---
+
+## 🔗 Links
+
+- **Documentation**: [docs/README.md](docs/README.md)
+- **Firebase Console**: https://console.firebase.google.com/project/ronin-80b29
+- **Issue Tracker**: [GitHub Issues]
+- **Project Board**: [GitHub Projects]
+
+---
+
+## 📞 Support
+
+For issues and questions:
+1. Check [Common Issues](docs/troubleshooting/COMMON_ISSUES.md)
+2. Review [FAQ](docs/troubleshooting/FAQ.md)
+3. Open an issue on GitHub
+4. Contact development team
+
+---
+
+## 🎉 Acknowledgments
+
+- Firebase for cloud infrastructure
+- OpenCV for computer vision
+- Shadcn/ui for UI components
+- React community for excellent tools
+
+---
+
+**Version**: 1.0.0  
+**Status**: Production Ready  
+**Last Updated**: February 28, 2026
+
+---
+
+Made with ❤️ by the AROHAN Team

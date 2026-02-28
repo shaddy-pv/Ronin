@@ -263,7 +263,8 @@ const Dashboard = () => {
     );
   }
 
-  // Show no-data state if not loading but no data
+  // Show no-data state ONLY if we've loaded and confirmed there's no data in Firebase at all
+  // This should only happen on very first setup before any data has been written
   if (!iotLoading && !iotReadings && !iotError) {
     return (
       <div className="flex min-h-screen">
@@ -272,9 +273,12 @@ const Dashboard = () => {
           <div className="min-h-screen flex items-center justify-center bg-background">
             <div className="text-center space-y-4 max-w-md px-4">
               <Activity className="w-16 h-16 mx-auto text-muted-foreground opacity-50" />
-              <h2 className="text-2xl font-bold">No Live Data Found</h2>
+              <h2 className="text-2xl font-bold">No Data in Firebase</h2>
               <p className="text-muted-foreground">
-                Waiting for AROHAN IoT node to send data. Make sure the device is powered on and connected to Firebase.
+                Waiting for AROHAN IoT node to send first data. Make sure the device is powered on and connected to Firebase.
+              </p>
+              <p className="text-xs text-muted-foreground mt-2">
+                This message only appears on first-time setup. Once data is received, it will be displayed even when the device is offline.
               </p>
               <Button onClick={() => window.location.reload()} variant="outline">
                 Refresh
@@ -328,7 +332,12 @@ const Dashboard = () => {
         <header className="sticky top-0 z-10 bg-card border-b border-border px-4 sm:px-8 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-xl sm:text-2xl font-bold">AROHAN Command Center</h1>
-            <p className="text-xs sm:text-sm text-muted-foreground">Last updated: {new Date().toLocaleTimeString()}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              {iotReadings?.status?.lastHeartbeat 
+                ? `Last data: ${new Date(iotReadings.status.lastHeartbeat).toLocaleString()}`
+                : `Dashboard loaded: ${new Date().toLocaleTimeString()}`
+              }
+            </p>
           </div>
           <div className="flex flex-wrap items-center gap-2 sm:gap-4">
             {/* IoT Node Status */}

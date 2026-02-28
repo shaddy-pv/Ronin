@@ -65,7 +65,7 @@ export interface HistoryLog {
 
 // IoT Readings
 export const subscribeToIoTReadings = (callback: (data: IoTReadings | null) => void) => {
-  const iotRef = ref(database, 'arohan/iot');
+  const iotRef = ref(database, 'ronin/iot');
   onValue(iotRef, (snapshot) => {
     callback(snapshot.val());
   });
@@ -74,7 +74,7 @@ export const subscribeToIoTReadings = (callback: (data: IoTReadings | null) => v
 
 // Rover Control
 export const subscribeToRoverControl = (callback: (data: RoverControl | null) => void) => {
-  const roverControlRef = ref(database, 'arohan/rover/control');
+  const roverControlRef = ref(database, 'ronin/rover/control');
   onValue(roverControlRef, (snapshot) => {
     callback(snapshot.val());
   });
@@ -82,7 +82,7 @@ export const subscribeToRoverControl = (callback: (data: RoverControl | null) =>
 };
 
 export const updateRoverControl = async (control: Partial<RoverControl>) => {
-  const roverControlRef = ref(database, 'arohan/rover/control');
+  const roverControlRef = ref(database, 'ronin/rover/control');
   await update(roverControlRef, control);
 };
 
@@ -104,7 +104,7 @@ export const triggerEmergencyStop = async () => {
 
 // Rover Status
 export const subscribeToRoverStatus = (callback: (data: RoverStatus | null) => void) => {
-  const roverStatusRef = ref(database, 'arohan/rover/status');
+  const roverStatusRef = ref(database, 'ronin/rover/status');
   onValue(roverStatusRef, (snapshot) => {
     callback(snapshot.val());
   });
@@ -113,7 +113,7 @@ export const subscribeToRoverStatus = (callback: (data: RoverStatus | null) => v
 
 // Rover Sensors (analog readings including continuous MQ-135)
 export const subscribeToRoverSensors = (callback: (data: RoverSensors | null) => void) => {
-  const roverSensorsRef = ref(database, 'arohan/rover/sensors');
+  const roverSensorsRef = ref(database, 'ronin/rover/sensors');
   onValue(roverSensorsRef, (snapshot) => {
     callback(snapshot.val());
   });
@@ -122,7 +122,7 @@ export const subscribeToRoverSensors = (callback: (data: RoverSensors | null) =>
 
 // Alerts
 export const subscribeToAlerts = (callback: (data: Record<string, Alert> | null) => void) => {
-  const alertsRef = ref(database, 'arohan/alerts');
+  const alertsRef = ref(database, 'ronin/alerts');
   onValue(alertsRef, (snapshot) => {
     callback(snapshot.val());
   });
@@ -130,7 +130,7 @@ export const subscribeToAlerts = (callback: (data: Record<string, Alert> | null)
 };
 
 export const addAlert = async (alert: Omit<Alert, 'timestamp'>) => {
-  const alertsRef = ref(database, 'arohan/alerts');
+  const alertsRef = ref(database, 'ronin/alerts');
   const newAlertRef = push(alertsRef);
   await set(newAlertRef, {
     ...alert,
@@ -139,13 +139,13 @@ export const addAlert = async (alert: Omit<Alert, 'timestamp'>) => {
 };
 
 export const resolveAlert = async (alertId: string) => {
-  const alertRef = ref(database, `arohan/alerts/${alertId}`);
+  const alertRef = ref(database, `ronin/alerts/${alertId}`);
   await update(alertRef, { resolved: true });
 };
 
 // History
 export const subscribeToHistory = (callback: (data: Record<string, HistoryLog> | null) => void) => {
-  const historyRef = ref(database, 'arohan/history');
+  const historyRef = ref(database, 'ronin/history');
   onValue(historyRef, (snapshot) => {
     callback(snapshot.val());
   });
@@ -153,7 +153,7 @@ export const subscribeToHistory = (callback: (data: Record<string, HistoryLog> |
 };
 
 export const addHistoryLog = async (log: Omit<HistoryLog, 'timestamp'>) => {
-  const historyRef = ref(database, 'arohan/history');
+  const historyRef = ref(database, 'ronin/history');
   const newLogRef = push(historyRef);
   await set(newLogRef, {
     ...log,
@@ -210,7 +210,7 @@ export interface SystemSettings {
 }
 
 export const subscribeToSettings = (callback: (data: SystemSettings | null) => void) => {
-  const settingsRef = ref(database, 'arohan/settings');
+  const settingsRef = ref(database, 'ronin/settings');
   onValue(settingsRef, (snapshot) => {
     callback(snapshot.val());
   });
@@ -218,16 +218,16 @@ export const subscribeToSettings = (callback: (data: SystemSettings | null) => v
 };
 
 export const updateSettings = async (settings: Partial<SystemSettings>) => {
-  const settingsRef = ref(database, 'arohan/settings');
+  const settingsRef = ref(database, 'ronin/settings');
   await update(settingsRef, settings);
 };
 
 export const updateThresholds = async (thresholds: Partial<SystemSettings['thresholds']>) => {
-  const thresholdsRef = ref(database, 'arohan/settings/thresholds');
+  const thresholdsRef = ref(database, 'ronin/settings/thresholds');
   await update(thresholdsRef, thresholds);
 };
 
 export const updateRoverBehavior = async (behavior: Partial<SystemSettings['roverBehavior']>) => {
-  const behaviorRef = ref(database, 'arohan/settings/roverBehavior');
+  const behaviorRef = ref(database, 'ronin/settings/roverBehavior');
   await update(behaviorRef, behavior);
 };

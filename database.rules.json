@@ -1,6 +1,6 @@
 {
   "rules": {
-    "arohan": {
+    "ronin": {
       ".read": "auth != null",
       ".write": "auth != null",
 

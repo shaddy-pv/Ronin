@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ref, onValue, off } from 'firebase/database';
+import { getAuth } from 'firebase/auth';
 import { database } from '@/lib/firebase';
 import { getRiskLevel } from '@/lib/hazardScore';
 
@@ -10,9 +11,17 @@ export const useHazardScore = () => {
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
+    // Check authentication before fetching
+    const auth = getAuth();
+    if (!auth.currentUser) {
+      console.debug('[useHazardScore] User not authenticated');
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     try {
-      const hazardScoreRef = ref(database, 'arohan/iot/hazardScore');
+      const hazardScoreRef = ref(database, 'ronin/iot/hazardScore');
       
       const unsubscribe = onValue(hazardScoreRef, (snapshot) => {
         const score = snapshot.val() || 0;
