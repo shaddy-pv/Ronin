@@ -255,4 +255,4 @@ For issues and questions:
 
 ---
 
-Made with ❤️ by the AROHAN Team
+Made by the AROHAN Team [TECHEEZ]
