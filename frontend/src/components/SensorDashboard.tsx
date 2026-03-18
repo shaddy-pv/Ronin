@@ -56,8 +56,8 @@ export const SensorDashboard: React.FC<SensorDashboardProps> = ({ className = ''
   const [history, setHistory] = useState<SensorData[]>([]);
 
   // Firebase paths
-  const SENSOR_PATH = 'arohan/sensors/current';
-  const HAZARD_PATH = 'arohan/hazard/score';
+  const SENSOR_PATH = 'ronin/sensors/current';
+  const HAZARD_PATH = 'ronin/hazard/score';
 
   // Calculate hazard score based on sensor readings
   const calculateHazardScore = useCallback((data: SensorData): HazardScore => {

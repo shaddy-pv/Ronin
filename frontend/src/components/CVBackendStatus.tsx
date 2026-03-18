@@ -89,14 +89,18 @@ export const CVBackendStatus: React.FC<CVBackendStatusProps> = ({ className = ''
         {status.connected && status.health && (
           <div className="space-y-2 text-xs text-muted-foreground">
             <div className="flex justify-between">
-              <span>OpenCV:</span>
-              <span className={status.health.opencv_ready ? 'text-green-500' : 'text-red-500'}>
-                {status.health.opencv_ready ? 'Ready' : 'Not Ready'}
+              <span>Detector:</span>
+              <span className={status.health.detector ? 'text-green-500' : 'text-red-500'}>
+                {status.health.detector ? status.health.detector.toUpperCase() : 'Not Ready'}
               </span>
             </div>
             <div className="flex justify-between">
+              <span>Recognizer:</span>
+              <span className="text-green-500">{status.health.recognizer || 'N/A'}</span>
+            </div>
+            <div className="flex justify-between">
               <span>Known Faces:</span>
-              <span>{status.health.known_faces || 0}</span>
+              <span>{status.health.known_encodings || 0}</span>
             </div>
             <div className="flex justify-between">
               <span>Alerts:</span>

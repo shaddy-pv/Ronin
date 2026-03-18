@@ -33,7 +33,7 @@ export const RoverMissionStatus = () => {
 
   // Subscribe to rover control
   useEffect(() => {
-    const controlRef = ref(database, 'arohan/rover/control');
+    const controlRef = ref(database, 'ronin/rover/control');
     const unsubscribe = onValue(controlRef, (snapshot) => {
       const data = snapshot.val();
       setRoverControl(data);
@@ -58,7 +58,7 @@ export const RoverMissionStatus = () => {
 
   // Subscribe to rover status
   useEffect(() => {
-    const statusRef = ref(database, 'arohan/rover/status');
+    const statusRef = ref(database, 'ronin/rover/status');
     const unsubscribe = onValue(statusRef, (snapshot) => {
       const data = snapshot.val();
       setRoverStatus(data);
@@ -69,7 +69,7 @@ export const RoverMissionStatus = () => {
 
   // Subscribe to latest alerts for dispatch reasons
   useEffect(() => {
-    const alertsRef = ref(database, 'arohan/alerts');
+    const alertsRef = ref(database, 'ronin/alerts');
     const unsubscribe = onValue(alertsRef, (snapshot) => {
       const data = snapshot.val();
       if (!data) return;
@@ -95,12 +95,11 @@ export const RoverMissionStatus = () => {
 
   // Real-time mission tracking from Firebase
   useEffect(() => {
-    const missionRef = ref(database, 'arohan/rover/mission');
+    const missionRef = ref(database, 'ronin/rover/mission');
     const unsubscribe = onValue(missionRef, (snapshot) => {
       const data = snapshot.val();
       
       if (data) {
-        console.log('[RoverMissionStatus] Mission update:', data);
         setMission({
           status: data.state || 'IDLE',
           dispatchedAt: data.dispatchedAt,

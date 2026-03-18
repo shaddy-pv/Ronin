@@ -17,6 +17,7 @@ import AlertsPage from "./pages/AlertsPage";
 import HistoryPage from "./pages/HistoryPage";
 import SettingsPage from "./pages/SettingsPage";
 import CameraTest from "./pages/CameraTest";
+import FaceRecognitionPage from "./pages/FaceRecognitionPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -87,6 +88,14 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <CameraTest />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/face-recognition"
+                element={
+                  <ProtectedRoute>
+                    <FaceRecognitionPage />
                   </ProtectedRoute>
                 }
               />

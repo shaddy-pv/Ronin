@@ -48,7 +48,6 @@ export const useRoverAlerts = (): UseRoverAlertsReturn => {
         
         if (response.ok) {
           setBackendAvailable(true);
-          console.log('✅ CV Backend is available');
           
           // Fetch initial alerts if backend is available
           const alertsResponse = await fetch(`${CV_BACKEND_URL}/alerts`, {

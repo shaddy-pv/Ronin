@@ -2,7 +2,7 @@
 
 import http from 'http';
 
-const ESP32_BASE_URL = 'http://192.168.1.18';
+const ESP32_BASE_URL = 'http://192.168.1.22';
 
 function getPageContent(url) {
   return new Promise((resolve, reject) => {
@@ -88,7 +88,7 @@ async function checkInterface() {
     }
     
     console.log('\n💡 Next steps:');
-    console.log('- Visit http://192.168.1.18/ in your browser to see the interface');
+    console.log('- Visit http://192.168.1.22/ in your browser to see the interface');
     console.log('- Look for "Start Stream" or similar buttons');
     console.log('- Check browser developer tools for streaming URLs');
     

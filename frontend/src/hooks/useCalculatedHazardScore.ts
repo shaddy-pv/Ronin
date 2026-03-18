@@ -116,7 +116,7 @@ export const useCalculatedHazardScore = () => {
       };
 
       // Log to Firebase for audit
-      const divergenceRef = ref(database, 'arohan/validation/divergence_events');
+      const divergenceRef = ref(database, 'ronin/validation/divergence_events');
       const newEventRef = push(divergenceRef);
       set(newEventRef, divergenceEvent).catch((error) => {
         logger.error('Failed to log divergence event', error);

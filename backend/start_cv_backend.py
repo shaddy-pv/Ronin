@@ -8,6 +8,13 @@ import sys
 import subprocess
 from pathlib import Path
 
+# Load .env file early so all env vars are available
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass  # Will be handled during requirements check
+
 def check_requirements():
     """Check if required packages are installed"""
     try:
@@ -52,7 +59,7 @@ def main():
             sys.exit(1)
     
     # Set environment variables
-    esp32_url = os.getenv('ESP32_CAM_URL', 'http://192.168.1.18')
+    esp32_url = os.getenv('ESP32_CAM_URL', 'http://192.168.1.22')
     print(f"📷 ESP32-CAM URL: {esp32_url}")
     
     # Import and start the backend

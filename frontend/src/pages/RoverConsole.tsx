@@ -6,7 +6,7 @@ import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ErrorState } from "@/components/ErrorState";
 import { SimpleMjpegStream } from "@/components/SimpleMjpegStream";
 import { RecentAlerts } from "@/components/RecentAlerts";
-import { CVBackendStatus } from "@/components/CVBackendStatus";
+import { SavedPaths } from "@/components/SavedPaths";
 import { SensorDashboard } from "@/components/SensorDashboard";
 import { ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Square, VideoOff, Battery, MapPin, Send, CheckCircle, Navigation } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
@@ -42,7 +42,6 @@ const RoverConsole = () => {
   useEffect(() => {
     const unsubscribe = subscribeToMission((missionData) => {
       setMission(missionData);
-      console.log('[RoverConsole] Mission update:', missionData);
     });
 
     return () => unsubscribe();
@@ -259,12 +258,11 @@ const RoverConsole = () => {
             {/* Left Panel - Live Camera */}
             <div className="lg:col-span-2">
               <SimpleMjpegStream
-                streamUrl="http://192.168.1.18:81/stream"
+                streamUrl={`${import.meta.env.VITE_CV_BACKEND_URL || 'http://localhost:5000'}/stream-raw`}
                 nodeId="rover-01"
                 roverId="rover-01"
                 showControls={true}
                 onSnapshotSaved={(metadata) => {
-                  console.log('Snapshot saved:', metadata);
                   toast({
                     title: "Snapshot Saved",
                     description: `Captured at ${new Date(metadata.timestamp).toLocaleTimeString()}`,
@@ -500,7 +498,7 @@ const RoverConsole = () => {
                 </div>
               </Card>
 
-              <CVBackendStatus className="mb-4" />
+              <SavedPaths />
 
               <Card className="p-4 sm:p-6">
                 <h2 className="text-lg font-bold mb-4">Rover Status</h2>

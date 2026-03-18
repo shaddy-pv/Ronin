@@ -19,12 +19,12 @@ const CameraTest: React.FC = () => {
           {/* ESP32-CAM Stream Component */}
           <div className="max-w-5xl mx-auto">
             <SimpleMjpegStream
-              streamUrl="http://192.168.1.18/"
+              streamUrl="http://192.168.1.22:81/stream"
               nodeId="test-node"
               roverId="test-rover"
               showControls={true}
               onSnapshotSaved={(metadata) => {
-                console.log('Test snapshot saved:', metadata);
+                // Snapshot saved
               }}
             />
           </div>
@@ -64,16 +64,16 @@ const CameraTest: React.FC = () => {
                 with face detection capabilities.
               </p>
               <p>
-                <strong>ESP32-CAM URL:</strong> http://192.168.1.18/stream 
+                <strong>ESP32-CAM URL:</strong> http://192.168.1.22/stream
                 (configurable via VITE_ESP32_BASE_URL in .env)
               </p>
               <p>
                 <strong>CV Overlay:</strong> Write bounding box data to Firebase path 
-                <code className="bg-secondary px-1 rounded">/arohan/rover/cv</code> to see overlays.
+                <code className="bg-secondary px-1 rounded">/ronin/rover/cv</code> to see overlays.
               </p>
               <p>
                 <strong>Snapshots:</strong> Saved to Firebase Storage at 
-                <code className="bg-secondary px-1 rounded">/arohan/snapshots/</code> with metadata 
+                <code className="bg-secondary px-1 rounded">/ronin/snapshots/</code> with metadata 
                 in Realtime Database.
               </p>
             </div>

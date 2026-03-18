@@ -37,14 +37,11 @@ export const SimpleMjpegStream: React.FC<SimpleMjpegStreamProps> = ({
   const [hasError, setHasError] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [detectedFaces, setDetectedFaces] = useState<any[]>([]);
-  const [faceRecognitionActive, setFaceRecognitionActive] = useState(false);
-  const recognitionIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
   
   const imgRef = useRef<HTMLImageElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const overlayCanvasRef = useRef<HTMLCanvasElement>(null);
+
   
   const { toast } = useToast();
   const { currentUser } = useAuth();
@@ -56,26 +53,19 @@ export const SimpleMjpegStream: React.FC<SimpleMjpegStreamProps> = ({
       return;
     }
     
-    console.log('🚀 Starting MJPEG stream:', streamUrl);
-    console.log('📷 Image element:', imgRef.current);
-    
     setIsStreaming(true);
     setHasError(false);
     setErrorMessage('');
     
     // Direct MJPEG stream - bypasses CORS completely
     const finalUrl = streamUrl;
-    console.log('🔗 Final URL:', finalUrl);
     imgRef.current.src = finalUrl;
-    
-    console.log('✅ Image src set to:', imgRef.current.src);
   }, [streamUrl]);
 
   // Stop stream
   const stopStream = useCallback(() => {
     if (!imgRef.current) return;
     
-    console.log('🛑 Stopping stream');
     imgRef.current.src = '';
     setIsStreaming(false);
     setHasError(false);
@@ -83,7 +73,6 @@ export const SimpleMjpegStream: React.FC<SimpleMjpegStreamProps> = ({
 
   // Handle image load success
   const handleImageLoad = useCallback(() => {
-    console.log('✅ Stream connected');
     setHasError(false);
     setErrorMessage('');
   }, []);
@@ -136,7 +125,7 @@ export const SimpleMjpegStream: React.FC<SimpleMjpegStreamProps> = ({
       
       // Upload to Firebase Storage
       const storage = getStorage(app);
-      const fileRef = storageRef(storage, `arohan/snapshots/${fileName}`);
+      const fileRef = storageRef(storage, `ronin/snapshots/${fileName}`);
       
       await uploadBytes(fileRef, blob, {
         contentType: 'image/jpeg',
@@ -163,7 +152,7 @@ export const SimpleMjpegStream: React.FC<SimpleMjpegStreamProps> = ({
       };
       
       // Save metadata to Realtime Database
-      const snapshotsRef = dbRef(database, 'arohan/snapshots');
+      const snapshotsRef = dbRef(database, 'ronin/snapshots');
       const newSnapshotRef = push(snapshotsRef);
       await set(newSnapshotRef, metadata);
       
@@ -189,179 +178,7 @@ export const SimpleMjpegStream: React.FC<SimpleMjpegStreamProps> = ({
     }
   }, [currentUser, nodeId, roverId, onSnapshotSaved, toast]);
 
-  // Toggle face recognition
-  const toggleFaceRecognition = useCallback(() => {
-    if (faceRecognitionActive) {
-      // Stop recognition
-      if (recognitionIntervalRef.current) {
-        clearInterval(recognitionIntervalRef.current);
-        recognitionIntervalRef.current = null;
-      }
-      setFaceRecognitionActive(false);
-      setDetectedFaces([]);
-      toast({
-        title: 'Face Recognition Stopped',
-        description: 'Face detection has been disabled',
-      });
-    } else {
-      // Start recognition
-      setFaceRecognitionActive(true);
-      toast({
-        title: 'Face Recognition Started',
-        description: 'Analyzing faces every 3 seconds',
-      });
-      
-      // Analyze immediately
-      analyzeFrame();
-      
-      // Then analyze every 3 seconds
-      recognitionIntervalRef.current = setInterval(() => {
-        analyzeFrame();
-      }, 3000);
-    }
-  }, [faceRecognitionActive, toast]);
 
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (recognitionIntervalRef.current) {
-        clearInterval(recognitionIntervalRef.current);
-      }
-    };
-  }, []);
-
-  // Analyze frame for face detection
-  const analyzeFrame = useCallback(async () => {
-    setIsAnalyzing(true);
-    
-    try {
-      const response = await fetch('http://localhost:5000/analyze-frame', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ source: 'esp32' }),
-      });
-
-      if (!response.ok) {
-        throw new Error('CV Backend not responding');
-      }
-
-      const result = await response.json();
-      
-      if (result.status === 'success' && result.alert) {
-        const alert = result.alert;
-        
-        // Extract face bounding boxes if available
-        if (alert.meta && alert.meta.bounding_box) {
-          // Determine label based on alert type
-          let faceLabel = 'Unknown Person';
-          if (alert.type === 'KNOWN_FACE') {
-            // Extract name from message like "Known person detected: John Doe"
-            const nameParts = alert.message.split(': ');
-            faceLabel = nameParts.length > 1 ? `Known: ${nameParts[1]}` : 'Known Person';
-          } else if (alert.type === 'UNKNOWN_FACE') {
-            faceLabel = 'Unknown Person';
-          }
-          
-          setDetectedFaces([{
-            x: alert.meta.bounding_box.x,
-            y: alert.meta.bounding_box.y,
-            w: alert.meta.bounding_box.w,
-            h: alert.meta.bounding_box.h,
-            label: faceLabel,
-            confidence: alert.confidence || 0.5,
-            isKnown: alert.type === 'KNOWN_FACE'
-          }]);
-          
-          // Draw boxes after a short delay to ensure image is loaded
-          setTimeout(() => drawFaceBoxes(), 100);
-        }
-        
-        // Show appropriate toast based on alert type
-        if (alert.type === 'KNOWN_FACE') {
-          toast({
-            title: '✅ Known Face Detected',
-            description: alert.message,
-          });
-        } else if (alert.type === 'UNKNOWN_FACE') {
-          toast({
-            title: '⚠️ Unknown Face Detected',
-            description: 'Unrecognized person detected in frame',
-          });
-        } else if (alert.type === 'ACCIDENT') {
-          toast({
-            title: '🚨 Accident Alert',
-            description: alert.message,
-            variant: 'destructive'
-          });
-        } else {
-          toast({
-            title: 'Detection Result',
-            description: alert.message,
-          });
-        }
-      } else {
-        toast({
-          title: 'No Faces Detected',
-          description: 'No faces found in the current frame',
-        });
-        setDetectedFaces([]);
-      }
-      
-    } catch (error) {
-      console.error('Analyze error:', error);
-      toast({
-        title: 'Analysis Failed',
-        description: 'Make sure CV backend is running on port 5000',
-        variant: 'destructive'
-      });
-    } finally {
-      setIsAnalyzing(false);
-    }
-  }, [toast]);
-
-  // Draw face detection boxes on overlay canvas
-  const drawFaceBoxes = useCallback(() => {
-    const canvas = overlayCanvasRef.current;
-    const img = imgRef.current;
-    
-    if (!canvas || !img || detectedFaces.length === 0) return;
-    
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    
-    // Set canvas size to match image
-    canvas.width = img.naturalWidth || 640;
-    canvas.height = img.naturalHeight || 480;
-    
-    // Clear canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // Draw each face box
-    detectedFaces.forEach((face) => {
-      const color = face.isKnown ? '#10b981' : '#f59e0b';
-      
-      // Draw bounding box
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 3;
-      ctx.strokeRect(face.x, face.y, face.w, face.h);
-      
-      // Draw label background
-      ctx.font = '16px sans-serif';
-      const text = `${face.label} (${Math.round(face.confidence * 100)}%)`;
-      const textMetrics = ctx.measureText(text);
-      const labelWidth = textMetrics.width + 12;
-      const labelHeight = 24;
-      
-      ctx.fillStyle = color;
-      ctx.fillRect(face.x, face.y - labelHeight - 2, labelWidth, labelHeight);
-      
-      // Draw label text
-      ctx.fillStyle = '#ffffff';
-      ctx.fillText(text, face.x + 6, face.y - 8);
-    });
-  }, [detectedFaces]);
 
   // Download snapshot locally
   const downloadSnapshot = useCallback(() => {
@@ -436,15 +253,6 @@ export const SimpleMjpegStream: React.FC<SimpleMjpegStreamProps> = ({
         />
         <canvas ref={canvasRef} className="hidden" />
         
-        {/* Face detection overlay canvas */}
-        {detectedFaces.length > 0 && (
-          <canvas
-            ref={overlayCanvasRef}
-            className="absolute top-0 left-0 w-full h-full pointer-events-none"
-            style={{ zIndex: 10 }}
-          />
-        )}
-        
         {/* Live indicator */}
         {isStreaming && !hasError && (
           <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded text-xs font-bold flex items-center gap-1">
@@ -513,57 +321,22 @@ export const SimpleMjpegStream: React.FC<SimpleMjpegStreamProps> = ({
             <Download className="w-4 h-4" />
             Download
           </Button>
-
-          <Button
-            variant={faceRecognitionActive ? "default" : "outline"}
-            size="sm"
-            onClick={toggleFaceRecognition}
-            disabled={!isStreaming || hasError}
-            className="gap-2"
-          >
-            {faceRecognitionActive ? (
-              <>
-                <Camera className="w-4 h-4" />
-                Stop Recognition
-              </>
-            ) : (
-              <>
-                <Camera className="w-4 h-4" />
-                Face Recognition
-              </>
-            )}
-          </Button>
         </div>
       )}
       
-      {/* Face Detection Results */}
-      {detectedFaces.length > 0 && (
-        <div className={`mt-4 p-3 rounded-lg ${
-          detectedFaces[0].isKnown 
-            ? 'bg-green-500/10 border border-green-500/20' 
-            : 'bg-orange-500/10 border border-orange-500/20'
-        }`}>
-          <div className="flex items-start gap-2">
-            <Camera className={`w-4 h-4 mt-0.5 flex-shrink-0 ${
-              detectedFaces[0].isKnown ? 'text-green-500' : 'text-orange-500'
-            }`} />
-            <div className="text-xs">
-              <p className={`font-semibold mb-1 ${
-                detectedFaces[0].isKnown ? 'text-green-500' : 'text-orange-500'
-              }`}>
-                {detectedFaces.length} Face{detectedFaces.length > 1 ? 's' : ''} Detected
-              </p>
-              {detectedFaces.map((face, idx) => (
-                <p key={idx} className="text-muted-foreground">
-                  • <span className={face.isKnown ? 'text-green-600 font-semibold' : 'text-orange-600 font-semibold'}>
-                    {face.label}
-                  </span> - {Math.round(face.confidence * 100)}% confidence
-                </p>
-              ))}
-            </div>
+      {/* Face Recognition Info */}
+      <div className="mt-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+        <div className="flex items-start gap-2">
+          <Camera className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
+          <div className="text-xs">
+            <p className="font-semibold text-blue-600 dark:text-blue-400 mb-1">Want Face Recognition?</p>
+            <p className="text-muted-foreground">
+              For real-time face detection and recognition, visit the dedicated <strong>Face Recognition</strong> page from the sidebar.
+              It provides continuous processing without interrupting the stream.
+            </p>
           </div>
         </div>
-      )}
+      </div>
 
       {/* Error Message */}
       {hasError && errorMessage && (

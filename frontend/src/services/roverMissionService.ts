@@ -28,7 +28,7 @@ export async function dispatchRover(target: string, reason: string): Promise<voi
   const now = Date.now();
   
   // Update mission status
-  const missionRef = ref(database, 'arohan/rover/mission');
+  const missionRef = ref(database, 'ronin/rover/mission');
   await set(missionRef, {
     state: 'DISPATCHED',
     target,
@@ -39,14 +39,12 @@ export async function dispatchRover(target: string, reason: string): Promise<voi
   });
 
   // Set rover control to auto mode
-  const controlRef = ref(database, 'arohan/rover/control');
+  const controlRef = ref(database, 'ronin/rover/control');
   await update(controlRef, {
     mode: 'auto',
     direction: 'forward',
     speed: 50
   });
-
-  console.log('[RoverMission] Rover dispatched to:', target);
 }
 
 /**
@@ -55,15 +53,13 @@ export async function dispatchRover(target: string, reason: string): Promise<voi
 export async function setRoverEnRoute(): Promise<void> {
   const now = Date.now();
   
-  const missionRef = ref(database, 'arohan/rover/mission');
+  const missionRef = ref(database, 'ronin/rover/mission');
   await update(missionRef, {
     state: 'EN_ROUTE',
     enRouteAt: now,
     updatedAt: now,
     progress: 50
   });
-
-  console.log('[RoverMission] Rover is en route');
 }
 
 /**
@@ -72,7 +68,7 @@ export async function setRoverEnRoute(): Promise<void> {
 export async function markRoverArrived(): Promise<void> {
   const now = Date.now();
   
-  const missionRef = ref(database, 'arohan/rover/mission');
+  const missionRef = ref(database, 'ronin/rover/mission');
   await update(missionRef, {
     state: 'ARRIVED',
     arrivedAt: now,
@@ -81,13 +77,11 @@ export async function markRoverArrived(): Promise<void> {
   });
 
   // Stop rover movement
-  const controlRef = ref(database, 'arohan/rover/control');
+  const controlRef = ref(database, 'ronin/rover/control');
   await update(controlRef, {
     direction: 'stop',
     speed: 0
   });
-
-  console.log('[RoverMission] Rover arrived at target');
 }
 
 /**
@@ -96,13 +90,11 @@ export async function markRoverArrived(): Promise<void> {
 export async function startInvestigation(): Promise<void> {
   const now = Date.now();
   
-  const missionRef = ref(database, 'arohan/rover/mission');
+  const missionRef = ref(database, 'ronin/rover/mission');
   await update(missionRef, {
     state: 'INVESTIGATING',
     updatedAt: now
   });
-
-  console.log('[RoverMission] Investigation started');
 }
 
 /**
@@ -111,20 +103,18 @@ export async function startInvestigation(): Promise<void> {
 export async function completeMission(): Promise<void> {
   const now = Date.now();
   
-  const missionRef = ref(database, 'arohan/rover/mission');
+  const missionRef = ref(database, 'ronin/rover/mission');
   await update(missionRef, {
     state: 'RETURNING',
     updatedAt: now
   });
 
   // Set rover to return
-  const controlRef = ref(database, 'arohan/rover/control');
+  const controlRef = ref(database, 'ronin/rover/control');
   await update(controlRef, {
     direction: 'back',
     speed: 40
   });
-
-  console.log('[RoverMission] Rover returning to base');
 }
 
 /**
@@ -133,7 +123,7 @@ export async function completeMission(): Promise<void> {
 export async function resetMission(): Promise<void> {
   const now = Date.now();
   
-  const missionRef = ref(database, 'arohan/rover/mission');
+  const missionRef = ref(database, 'ronin/rover/mission');
   await set(missionRef, {
     state: 'IDLE',
     target: '',
@@ -142,21 +132,19 @@ export async function resetMission(): Promise<void> {
   });
 
   // Set rover control to manual and stop
-  const controlRef = ref(database, 'arohan/rover/control');
+  const controlRef = ref(database, 'ronin/rover/control');
   await update(controlRef, {
     mode: 'manual',
     direction: 'stop',
     speed: 0
   });
-
-  console.log('[RoverMission] Mission reset to IDLE');
 }
 
 /**
  * Subscribe to mission updates
  */
 export function subscribeToMission(callback: (mission: RoverMission | null) => void): () => void {
-  const missionRef = ref(database, 'arohan/rover/mission');
+  const missionRef = ref(database, 'ronin/rover/mission');
   
   const unsubscribe = onValue(missionRef, (snapshot) => {
     const data = snapshot.val();
@@ -170,7 +158,7 @@ export function subscribeToMission(callback: (mission: RoverMission | null) => v
  * Update mission progress (0-100)
  */
 export async function updateMissionProgress(progress: number): Promise<void> {
-  const missionRef = ref(database, 'arohan/rover/mission');
+  const missionRef = ref(database, 'ronin/rover/mission');
   await update(missionRef, {
     progress: Math.max(0, Math.min(100, progress)),
     updatedAt: Date.now()

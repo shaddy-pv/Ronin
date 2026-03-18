@@ -99,15 +99,6 @@ const Dashboard = () => {
   const sensorRisks = useMemo(() => {
     if (!iotReadings) return [];
 
-    // Debug logging
-    console.log('[Dashboard] IoT Readings:', {
-      mq2: iotReadings.mq2,
-      mq135: iotReadings.mq135,
-      mq135_digital: iotReadings.mq135_digital,
-      temperature: iotReadings.temperature,
-      humidity: iotReadings.humidity
-    });
-
     const mq2Contribution = getSensorContribution(iotReadings.mq2, 'mq2');
     
     // For MQ-135: Fixed IoT uses binary (0/1), so normalize it to 0 or 100
@@ -121,12 +112,6 @@ const Dashboard = () => {
     };
     
     const tempContribution = getSensorContribution(iotReadings.temperature, 'temp');
-
-    console.log('[Dashboard] Sensor Contributions:', {
-      mq2: mq2Contribution,
-      mq135: mq135Contribution,
-      temp: tempContribution
-    });
 
     const getMQ2Status = (): 'SAFE' | 'WARNING' | 'DANGER' => {
       if (mq2Contribution.normalized < 30) return 'SAFE';
@@ -199,7 +184,7 @@ const Dashboard = () => {
 
   const handleEmergencyActivation = async () => {
     try {
-      const emergencyRef = ref(database, 'arohan/iot/emergency');
+      const emergencyRef = ref(database, 'ronin/iot_nodes/iotA/emergency');
       await update(emergencyRef, { active: true, timestamp: Date.now() });
       setEmergencyActive(true);
 

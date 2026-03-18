@@ -1,0 +1,1378 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>AROHAN — Face Recognition</title>
+
+    <!-- face-api.js from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        /* ── Toggle Switch ──────────────────────────────────── */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 24px;
+            transition: .3s;
+        }
+
+        .toggle-slider:before {
+            content: '';
+            position: absolute;
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background: #fff;
+            border-radius: 50%;
+            transition: .3s;
+        }
+
+        .toggle-switch input:checked + .toggle-slider {
+            background: linear-gradient(135deg, #48bb78, #38b2ac);
+        }
+
+        .toggle-switch input:checked + .toggle-slider:before {
+            transform: translateX(20px);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            min-height: 100vh;
+            color: #e2e8f0;
+            overflow-x: hidden;
+        }
+
+        /* ── Header ─────────────────────────────────────────── */
+        .header {
+            text-align: center;
+            padding: 20px 16px 10px;
+        }
+
+        .header h1 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
+        }
+
+        .header p {
+            font-size: .75rem;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+
+        /* ── Glass Card ──────────────────────────────────────── */
+        .card {
+            max-width: 520px;
+            margin: 0 auto 16px;
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 16px;
+        }
+
+        .card-title {
+            font-size: .8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #a78bfa;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-title .icon {
+            font-size: 1rem;
+        }
+
+        /* ── Connect Bar ─────────────────────────────────────── */
+        .connect-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .connect-row input {
+            flex: 1;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
+            font-family: 'Inter', monospace;
+            font-size: .85rem;
+            outline: none;
+            transition: border-color .2s;
+        }
+
+        .connect-row input:focus {
+            border-color: #667eea;
+        }
+
+        .connect-row input::placeholder {
+            color: #64748b;
+        }
+
+        .btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Inter', sans-serif;
+            font-size: .8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .2s;
+            color: #fff;
+            white-space: nowrap;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #38b2ac, #48bb78);
+            box-shadow: 0 4px 15px rgba(72, 187, 120, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #e53e3e, #c53030);
+            box-shadow: 0 4px 15px rgba(229, 62, 62, 0.3);
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: .7rem;
+            border-radius: 8px;
+        }
+
+        /* ── Status ──────────────────────────────────────────── */
+        .status-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+            font-size: .75rem;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #e53e3e;
+            transition: background .3s;
+            flex-shrink: 0;
+        }
+
+        .status-dot.connected {
+            background: #48bb78;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.loading {
+            background: #ed8936;
+            animation: pulse 0.5s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.4;
+            }
+        }
+
+        /* ── Video Canvas ────────────────────────────────────── */
+        .video-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 4/3;
+            background: #1a1a2e;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .video-container canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .no-feed {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #64748b;
+            font-size: .85rem;
+            pointer-events: none;
+        }
+
+        .no-feed .big-icon {
+            font-size: 3rem;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .fps-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: .65rem;
+            font-weight: 600;
+            color: #48bb78;
+        }
+
+        .faces-badge {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: .65rem;
+            font-weight: 600;
+            color: #a78bfa;
+        }
+
+        /* ── Detection Info ──────────────────────────────────── */
+        .detection-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .det-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px 12px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .det-label {
+            font-size: .65rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+        }
+
+        .det-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-top: 2px;
+            color: #fff;
+        }
+
+        /* ── Controls ────────────────────────────────────────── */
+        .controls {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        /* ── Enrolled Faces ──────────────────────────────────── */
+        .enrolled-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .enrolled-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px 14px;
+            border-radius: 10px;
+            transition: background .2s;
+        }
+
+        .enrolled-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .enrolled-name {
+            font-weight: 600;
+            font-size: .85rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .enrolled-name .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .75rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .enrolled-meta {
+            font-size: .65rem;
+            color: #94a3b8;
+            margin-top: 2px;
+        }
+
+        .no-enrolled {
+            text-align: center;
+            color: #64748b;
+            font-size: .8rem;
+            padding: 20px;
+            font-style: italic;
+        }
+
+        /* ── Log Panel ───────────────────────────────────────── */
+        .log {
+            max-height: 120px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: .7rem;
+            color: #94a3b8;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 10px;
+            line-height: 1.6;
+        }
+
+        .log .info {
+            color: #48bb78;
+        }
+
+        .log .warn {
+            color: #ed8936;
+        }
+
+        .log .err {
+            color: #e53e3e;
+        }
+
+        /* ── Modal ───────────────────────────────────────────── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal-box {
+            background: #1e1b4b;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            width: 90%;
+            max-width: 340px;
+            text-align: center;
+        }
+
+        .modal-box h3 {
+            font-size: 1rem;
+            margin-bottom: 16px;
+            color: #a78bfa;
+        }
+
+        .modal-box input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            font-size: .9rem;
+            margin-bottom: 16px;
+            outline: none;
+        }
+
+        .modal-box input:focus {
+            border-color: #667eea;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        /* ── Footer ──────────────────────────────────────────── */
+        .footer {
+            text-align: center;
+            padding: 16px;
+            font-size: .65rem;
+            color: #475569;
+        }
+
+        /* ── Scrollbar ───────────────────────────────────────── */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ═══════════════ HEADER ═══════════════ -->
+    <div class="header">
+        <h1>🤖 AROHAN Face Recognition</h1>
+        <p>ESP32-CAM powered • Browser-side ML • face-api.js</p>
+    </div>
+
+    <!-- ═══════════════ CONNECT ═══════════════ -->
+    <div class="card">
+        <div class="card-title"><span class="icon">📡</span> ESP32-CAM Connection</div>
+        <div class="connect-row">
+            <input type="text" id="camIP" placeholder="ESP32-CAM IP  (e.g. 192.168.1.100)" value="">
+            <input type="number" id="camPort" placeholder="Port" value="81" style="width:70px; flex:none;">
+            <button class="btn btn-primary" id="connectBtn" onclick="toggleConnect()">Connect</button>
+        </div>
+        <div class="status-bar">
+            <div class="status-dot" id="statusDot"></div>
+            <span id="statusText">Disconnected — Enter ESP32-CAM IP above</span>
+        </div>
+    </div>
+
+    <!-- ═══════════════ VIDEO FEED ═══════════════ -->
+    <div class="card">
+        <div class="card-title"><span class="icon">🎥</span> Live Feed</div>
+        <div class="video-container" id="videoContainer">
+            <canvas id="videoCanvas" width="400" height="300"></canvas>
+            <canvas id="overlayCanvas" width="400" height="300"
+                style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;"></canvas>
+            <div class="no-feed" id="noFeed">
+                <span class="big-icon">📷</span>
+                Connect to ESP32-CAM to start
+            </div>
+            <div class="fps-badge" id="fpsBadge" style="display:none;">0 FPS</div>
+            <div class="faces-badge" id="facesBadge" style="display:none;">0 faces</div>
+        </div>
+
+        <div class="detection-info">
+            <div class="det-item">
+                <div class="det-label">Detected</div>
+                <div class="det-value" id="detCount">—</div>
+            </div>
+            <div class="det-item">
+                <div class="det-label">Recognized</div>
+                <div class="det-value" id="recName">—</div>
+            </div>
+            <div class="det-item">
+                <div class="det-label">Confidence</div>
+                <div class="det-value" id="recConf">—</div>
+            </div>
+            <div class="det-item">
+                <div class="det-label">Frame Rate</div>
+                <div class="det-value" id="fpsValue">—</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════ CONTROLS ═══════════════ -->
+    <div class="card">
+        <div class="card-title"><span class="icon">⚙️</span> Controls</div>
+        <div class="controls">
+            <button class="btn btn-success" id="enrollBtn" onclick="startEnroll()" disabled>✨ Enroll Face</button>
+            <button class="btn btn-primary" id="detectToggle" onclick="toggleDetection()" disabled>🔍 Start
+                Detection</button>
+        </div>
+    </div>
+
+    <!-- ═══════════════ PYTHON BACKEND ═══════════════ -->
+    <div class="card">
+        <div class="card-title"><span class="icon">🐍</span> Python Backend (Advanced Recognition)</div>
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+            <label class="toggle-switch">
+                <input type="checkbox" id="pythonToggle" onchange="togglePythonMode()">
+                <span class="toggle-slider"></span>
+            </label>
+            <span style="font-size:.85rem; font-weight:600;">Use Python Model</span>
+            <span id="pythonStatus" style="font-size:.7rem; color:#94a3b8; margin-left:auto;">Disabled</span>
+        </div>
+        <div class="connect-row" style="margin-bottom:10px;">
+            <input type="text" id="pythonURL" placeholder="Python server URL" value="http://localhost:5000">
+            <button class="btn btn-primary btn-sm" id="testPythonBtn" onclick="testPythonServer()">Test</button>
+        </div>
+        <div class="controls" id="pythonControls" style="display:none;">
+            <button class="btn btn-success btn-sm" onclick="captureTrainingImage()">📸 Capture Training Image</button>
+            <button class="btn btn-primary btn-sm" onclick="triggerTraining()">🧠 Train Model</button>
+            <button class="btn btn-sm" style="background:rgba(255,255,255,0.1);" onclick="viewEnrolledPython()">👤 View Enrolled</button>
+        </div>
+    </div>
+
+    <!-- ═══════════════ ENROLLED FACES ═══════════════ -->
+    <div class="card">
+        <div class="card-title"><span class="icon">👤</span> Enrolled Faces (<span id="enrolledCount">0</span>)</div>
+        <div class="enrolled-list" id="enrolledList">
+            <div class="no-enrolled">No faces enrolled yet. Connect and click "Enroll Face".</div>
+        </div>
+    </div>
+
+    <!-- ═══════════════ LOG ═══════════════ -->
+    <div class="card">
+        <div class="card-title"><span class="icon">📋</span> Log</div>
+        <div class="log" id="logPanel"></div>
+    </div>
+
+    <div class="footer">AROHAN Rover • Face Recognition Module • ESP32-CAM + face-api.js</div>
+
+    <!-- ═══════════════ ENROLL MODAL ═══════════════ -->
+    <div class="modal-overlay" id="enrollModal">
+        <div class="modal-box">
+            <h3>👤 Enroll New Face</h3>
+            <p style="font-size:.75rem;color:#94a3b8;margin-bottom:12px;">
+                Position face in camera, then enter a name.
+            </p>
+            <input type="text" id="enrollName" placeholder="Enter name..." maxlength="30" autocomplete="off">
+            <div class="modal-actions">
+                <button class="btn btn-danger btn-sm" onclick="closeEnrollModal()">Cancel</button>
+                <button class="btn btn-success btn-sm" onclick="confirmEnroll()">Enroll</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════ SCRIPT ═══════════════ -->
+    <script>
+        // ══════════════════════════════════════════════════════════════
+        //  STATE
+        // ══════════════════════════════════════════════════════════════
+        let connected = false;
+        let streaming = false;
+        let detecting = false;
+        let modelsLoaded = false;
+        let camBaseURL = '';
+
+        let enrolledFaces = [];   // [{name, descriptor: Float32Array}]
+        let faceMatcher = null;
+
+        let frameCount = 0;
+        let fpsTimer = 0;
+        let currentFPS = 0;
+
+        let lastDetections = [];
+        let pendingEnroll = false;
+
+        // Python backend mode
+        let pythonMode = false;
+        let pythonServerURL = 'http://localhost:5000';
+        let pythonServerOnline = false;
+
+        const MATCH_THRESHOLD = 0.55;   // Euclidean distance — lower = stricter
+        const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/';
+
+        const videoCanvas = document.getElementById('videoCanvas');
+        const videoCtx = videoCanvas.getContext('2d');
+        const overlayCanvas = document.getElementById('overlayCanvas');
+        const overlayCtx = overlayCanvas.getContext('2d');
+
+        // ══════════════════════════════════════════════════════════════
+        //  LOGGING
+        // ══════════════════════════════════════════════════════════════
+        function log(msg, cls) {
+            const panel = document.getElementById('logPanel');
+            const t = new Date().toLocaleTimeString();
+            panel.innerHTML += `<div class="${cls || ''}">[${t}] ${msg}</div>`;
+            panel.scrollTop = panel.scrollHeight;
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        //  LOAD face-api.js MODELS
+        // ══════════════════════════════════════════════════════════════
+        async function loadModels() {
+            log('Loading face-api.js models from CDN...', 'info');
+            try {
+                await Promise.all([
+                    faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+                    faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL),
+                    faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
+                ]);
+                modelsLoaded = true;
+                log('✅ All models loaded!', 'info');
+                document.getElementById('detectToggle').disabled = false;
+            } catch (e) {
+                log('❌ Model load failed: ' + e.message, 'err');
+                log('Make sure you have internet access for CDN models.', 'warn');
+            }
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        //  CONNECT / DISCONNECT
+        // ══════════════════════════════════════════════════════════════
+        async function toggleConnect() {
+            if (connected) {
+                disconnect();
+                return;
+            }
+
+            const ip = document.getElementById('camIP').value.trim();
+            const port = document.getElementById('camPort').value.trim() || '81';
+
+            if (!ip) {
+                log('Enter an IP address first!', 'warn');
+                return;
+            }
+
+            camBaseURL = `http://${ip}:${port}`;
+            setStatus('loading', 'Connecting to ' + camBaseURL + '...');
+            log('Connecting to ' + camBaseURL + '...', 'info');
+
+            // Test connection by fetching a single frame
+            try {
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 5000);
+
+                const resp = await fetch(camBaseURL + '/capture', {
+                    signal: controller.signal,
+                    mode: 'cors'
+                });
+                clearTimeout(timeout);
+
+                if (!resp.ok) throw new Error('HTTP ' + resp.status);
+
+                const blob = await resp.blob();
+                if (blob.size < 100) throw new Error('Empty frame');
+
+                connected = true;
+                setStatus('connected', 'Connected to ' + camBaseURL);
+                log('✅ Connected! Frame size: ' + (blob.size / 1024).toFixed(1) + ' KB', 'info');
+
+                document.getElementById('connectBtn').textContent = 'Disconnect';
+                document.getElementById('connectBtn').classList.remove('btn-primary');
+                document.getElementById('connectBtn').classList.add('btn-danger');
+                document.getElementById('enrollBtn').disabled = false;
+                document.getElementById('noFeed').style.display = 'none';
+
+                // Start streaming
+                startStream();
+
+                // Load models if not already loaded
+                if (!modelsLoaded) loadModels();
+
+            } catch (e) {
+                connected = false;
+                let msg = e.message;
+                if (e.name === 'AbortError') msg = 'Timeout (5s) — check IP & port';
+                if (msg.includes('Failed to fetch') || msg.includes('NetworkError'))
+                    msg = 'Network error — check IP, port, and that ESP32-CAM is on same network';
+                setStatus('disconnected', 'Connection failed');
+                log('❌ ' + msg, 'err');
+            }
+        }
+
+        function disconnect() {
+            connected = false;
+            streaming = false;
+            detecting = false;
+            setStatus('disconnected', 'Disconnected');
+            document.getElementById('connectBtn').textContent = 'Connect';
+            document.getElementById('connectBtn').classList.remove('btn-danger');
+            document.getElementById('connectBtn').classList.add('btn-primary');
+            document.getElementById('enrollBtn').disabled = true;
+            document.getElementById('noFeed').style.display = '';
+            document.getElementById('fpsBadge').style.display = 'none';
+            document.getElementById('facesBadge').style.display = 'none';
+
+            const dt = document.getElementById('detectToggle');
+            dt.textContent = '🔍 Start Detection';
+
+            overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+            log('Disconnected.', 'warn');
+        }
+
+        function setStatus(state, text) {
+            const dot = document.getElementById('statusDot');
+            dot.className = 'status-dot' + (state === 'connected' ? ' connected' : state === 'loading' ? ' loading' : '');
+            document.getElementById('statusText').textContent = text;
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        //  FRAME CAPTURE LOOP (using ESP32 /stream endpoints)
+        // ══════════════════════════════════════════════════════════════
+        let streamImage = null;
+
+        async function startStream() {
+            streaming = true;
+            frameCount = 0;
+            fpsTimer = performance.now();
+            document.getElementById('fpsBadge').style.display = '';
+            log('Starting HTTP MJPEG stream...', 'info');
+            
+            // Create a hidden image element to load the MJPEG stream
+            if (!streamImage) {
+                streamImage = new Image();
+                streamImage.crossOrigin = "anonymous";
+            }
+            
+            // The ESP32-CAM usually serves its stream on port 81 (or /stream on port 80 depending on code)
+            // Using /stream as defined in your esp32cam.ino
+            const streamUrl = camBaseURL + '/stream';
+            streamImage.src = streamUrl;
+            
+            // Wait for the first frame to load to set canvas size
+            streamImage.onload = () => {
+                if (videoCanvas.width !== streamImage.width || videoCanvas.height !== streamImage.height) {
+                    videoCanvas.width = streamImage.width;
+                    videoCanvas.height = streamImage.height;
+                    overlayCanvas.width = streamImage.width;
+                    overlayCanvas.height = streamImage.height;
+                }
+                log('Stream started automatically.', 'success');
+                // We only need onload to fire once for setup
+                streamImage.onload = null;
+            };
+
+            streamImage.onerror = () => {
+                log('Stream failed to load. Check ESP32 connection.', 'err');
+                disconnect();
+            };
+
+            // Start the drawing loop
+            requestAnimationFrame(drawLoop);
+        }
+
+        // Python detection state
+        let pythonDetectionRunning = false;
+
+        async function drawLoop() {
+            if (!connected || !streaming) {
+                if (streamImage) streamImage.src = ""; // Stop stream
+                return;
+            }
+
+            try {
+                // Draw current frame from the MJPEG stream image to the canvas
+                if (streamImage.complete && streamImage.naturalWidth > 0) {
+                    videoCtx.drawImage(streamImage, 0, 0, videoCanvas.width, videoCanvas.height);
+                    
+                    // FPS counter
+                    frameCount++;
+                    const elapsed = performance.now() - fpsTimer;
+                    if (elapsed >= 1000) {
+                        currentFPS = Math.round(frameCount * 1000 / elapsed);
+                        frameCount = 0;
+                        fpsTimer = performance.now();
+                        document.getElementById('fpsBadge').textContent = currentFPS + ' FPS';
+                        document.getElementById('fpsValue').textContent = currentFPS;
+                    }
+
+                    // Run detection on this frame non-blockingly
+                    if (detecting) {
+                        if (pythonMode && pythonServerOnline) {
+                            if (!pythonDetectionRunning) {
+                                pythonDetectionRunning = true;
+                                runPythonDetection().finally(() => {
+                                    pythonDetectionRunning = false;
+                                });
+                            }
+                        } else if (modelsLoaded) {
+                            await runDetection();
+                        }
+                    }
+                }
+            } catch (e) {
+                // Ignore draw errors if image isn't ready
+            }
+
+            // Sync to monitor refresh rate (typically 60fps)
+            requestAnimationFrame(drawLoop);
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        //  FACE DETECTION + RECOGNITION
+        // ══════════════════════════════════════════════════════════════
+        function toggleDetection() {
+            if (!modelsLoaded) {
+                log('Models not loaded yet!', 'warn');
+                return;
+            }
+            detecting = !detecting;
+            const btn = document.getElementById('detectToggle');
+            if (detecting) {
+                btn.textContent = '⏹ Stop Detection';
+                document.getElementById('facesBadge').style.display = '';
+                log('Face detection ON', 'info');
+            } else {
+                btn.textContent = '🔍 Start Detection';
+                document.getElementById('facesBadge').style.display = 'none';
+                overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+                document.getElementById('detCount').textContent = '—';
+                document.getElementById('recName').textContent = '—';
+                document.getElementById('recConf').textContent = '—';
+                log('Face detection OFF', 'info');
+            }
+        }
+
+        async function runDetection() {
+            try {
+                const options = new faceapi.TinyFaceDetectorOptions({
+                    inputSize: 320,
+                    scoreThreshold: 0.45
+                });
+
+                const detections = await faceapi
+                    .detectAllFaces(videoCanvas, options)
+                    .withFaceLandmarks(true)       // useTinyModel = true
+                    .withFaceDescriptors();
+
+                lastDetections = detections;
+
+                // Clear overlay
+                overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+
+                const numFaces = detections.length;
+                document.getElementById('detCount').textContent = numFaces;
+                document.getElementById('facesBadge').textContent = numFaces + ' face' + (numFaces !== 1 ? 's' : '');
+
+                if (numFaces === 0) {
+                    document.getElementById('recName').textContent = '—';
+                    document.getElementById('recConf').textContent = '—';
+                    return;
+                }
+
+                // Build face matcher from enrolled faces
+                buildFaceMatcher();
+
+                detections.forEach((det, idx) => {
+                    const box = det.detection.box;
+                    let label = 'Unknown';
+                    let color = '#e53e3e';
+                    let confidence = 0;
+
+                    if (faceMatcher) {
+                        const match = faceMatcher.findBestMatch(det.descriptor);
+                        if (match.label !== 'unknown') {
+                            label = match.label;
+                            confidence = Math.round((1 - match.distance) * 100);
+                            color = '#48bb78';  // green for recognized
+                        } else {
+                            confidence = 0;
+                        }
+                    }
+
+                    // Draw bounding box
+                    overlayCtx.strokeStyle = color;
+                    overlayCtx.lineWidth = 2.5;
+                    overlayCtx.strokeRect(box.x, box.y, box.width, box.height);
+
+                    // Draw label background
+                    const labelText = label + (confidence > 0 ? ` (${confidence}%)` : '');
+                    overlayCtx.font = 'bold 14px Inter, sans-serif';
+                    const textWidth = overlayCtx.measureText(labelText).width;
+                    const labelY = box.y > 24 ? box.y - 8 : box.y + box.height + 20;
+
+                    overlayCtx.fillStyle = color;
+                    overlayCtx.beginPath();
+                    overlayCtx.roundRect(box.x - 1, labelY - 16, textWidth + 12, 22, 4);
+                    overlayCtx.fill();
+
+                    // Draw label text
+                    overlayCtx.fillStyle = '#fff';
+                    overlayCtx.fillText(labelText, box.x + 5, labelY);
+
+                    // Update info for first face
+                    if (idx === 0) {
+                        document.getElementById('recName').textContent = label;
+                        document.getElementById('recConf').textContent = confidence > 0 ? confidence + '%' : '—';
+                    }
+                });
+
+            } catch (e) {
+                // Don't spam log with detection errors
+                console.error('Detection error:', e);
+            }
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        //  FACE ENROLLMENT
+        // ══════════════════════════════════════════════════════════════
+        function startEnroll() {
+            if (!connected) {
+                log('Connect to ESP32-CAM first!', 'warn');
+                return;
+            }
+            if (!modelsLoaded) {
+                log('Models still loading...', 'warn');
+                return;
+            }
+            pendingEnroll = true;
+            document.getElementById('enrollModal').classList.add('show');
+            document.getElementById('enrollName').value = '';
+            document.getElementById('enrollName').focus();
+        }
+
+        function closeEnrollModal() {
+            document.getElementById('enrollModal').classList.remove('show');
+            pendingEnroll = false;
+        }
+
+        async function confirmEnroll() {
+            const name = document.getElementById('enrollName').value.trim();
+            if (!name) {
+                alert('Please enter a name!');
+                return;
+            }
+
+            log('Enrolling "' + name + '" — capturing face descriptor...', 'info');
+
+            try {
+                const options = new faceapi.TinyFaceDetectorOptions({
+                    inputSize: 320,
+                    scoreThreshold: 0.4
+                });
+
+                // Detect face in current canvas frame
+                const det = await faceapi
+                    .detectSingleFace(videoCanvas, options)
+                    .withFaceLandmarks(true)
+                    .withFaceDescriptor();
+
+                if (!det) {
+                    log('❌ No face detected! Position your face in the camera view.', 'err');
+                    alert('No face detected in the current frame.\nMake sure your face is clearly visible in the camera.');
+                    return;
+                }
+
+                // Save descriptor
+                const descriptor = Array.from(det.descriptor);  // Convert Float32Array to regular array for JSON
+
+                // Check if name already exists — update or add
+                const existing = enrolledFaces.findIndex(f => f.name.toLowerCase() === name.toLowerCase());
+                if (existing >= 0) {
+                    // Average with existing descriptor for better recognition
+                    const oldDesc = enrolledFaces[existing].descriptors;
+                    oldDesc.push(descriptor);
+                    if (oldDesc.length > 5) oldDesc.shift(); // Keep max 5 samples
+                    enrolledFaces[existing].name = name;
+                    log('✅ Updated "' + name + '" with new sample (' + oldDesc.length + ' total)', 'info');
+                } else {
+                    enrolledFaces.push({
+                        name: name,
+                        descriptors: [descriptor]
+                    });
+                    log('✅ Enrolled "' + name + '" successfully!', 'info');
+                }
+
+                saveFacesToStorage();
+                renderEnrolledList();
+                buildFaceMatcher();
+                closeEnrollModal();
+
+            } catch (e) {
+                log('❌ Enrollment error: ' + e.message, 'err');
+            }
+        }
+
+        function buildFaceMatcher() {
+            if (enrolledFaces.length === 0) {
+                faceMatcher = null;
+                return;
+            }
+
+            try {
+                const labeledDescriptors = enrolledFaces.map(face => {
+                    const descriptors = face.descriptors.map(d => new Float32Array(d));
+                    return new faceapi.LabeledFaceDescriptors(face.name, descriptors);
+                });
+                faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, MATCH_THRESHOLD);
+            } catch (e) {
+                console.error('FaceMatcher error:', e);
+                faceMatcher = null;
+            }
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        //  LOCAL STORAGE
+        // ══════════════════════════════════════════════════════════════
+        function saveFacesToStorage() {
+            try {
+                localStorage.setItem('arohan_faces', JSON.stringify(enrolledFaces));
+            } catch (e) {
+                log('Storage save error: ' + e.message, 'warn');
+            }
+        }
+
+        function loadFacesFromStorage() {
+            try {
+                const data = localStorage.getItem('arohan_faces');
+                if (data) {
+                    enrolledFaces = JSON.parse(data);
+                    log('Loaded ' + enrolledFaces.length + ' enrolled face(s) from storage.', 'info');
+                    buildFaceMatcher();
+                }
+            } catch (e) {
+                log('Storage load error: ' + e.message, 'warn');
+                enrolledFaces = [];
+            }
+        }
+
+        function deleteEnrolledFace(name) {
+            if (!confirm('Delete enrolled face "' + name + '"?')) return;
+            enrolledFaces = enrolledFaces.filter(f => f.name !== name);
+            saveFacesToStorage();
+            buildFaceMatcher();
+            renderEnrolledList();
+            log('Deleted "' + name + '"', 'warn');
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        //  RENDER ENROLLED LIST
+        // ══════════════════════════════════════════════════════════════
+        function renderEnrolledList() {
+            const list = document.getElementById('enrolledList');
+            document.getElementById('enrolledCount').textContent = enrolledFaces.length;
+
+            if (enrolledFaces.length === 0) {
+                list.innerHTML = '<div class="no-enrolled">No faces enrolled yet. Connect and click "Enroll Face".</div>';
+                return;
+            }
+
+            list.innerHTML = enrolledFaces.map(face => {
+                const initials = face.name.substring(0, 2).toUpperCase();
+                const samples = face.descriptors ? face.descriptors.length : 1;
+                return `
+      <div class="enrolled-item">
+        <div class="enrolled-name">
+          <div class="avatar">${initials}</div>
+          <div>
+            <div>${face.name}</div>
+            <div class="enrolled-meta">${samples} sample${samples > 1 ? 's' : ''}</div>
+          </div>
+        </div>
+        <button class="btn btn-danger btn-sm" onclick="deleteEnrolledFace('${face.name.replace(/'/g, "\\'")}')">🗑</button>
+      </div>
+    `;
+            }).join('');
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        //  PYTHON BACKEND FUNCTIONS
+        // ══════════════════════════════════════════════════════════════
+        function togglePythonMode() {
+            pythonMode = document.getElementById('pythonToggle').checked;
+            const status = document.getElementById('pythonStatus');
+            const controls = document.getElementById('pythonControls');
+
+            if (pythonMode) {
+                status.textContent = 'Enabled — checking server...';
+                status.style.color = '#ed8936';
+                controls.style.display = '';
+                testPythonServer();
+                log('Python backend mode ENABLED', 'info');
+            } else {
+                status.textContent = 'Disabled';
+                status.style.color = '#94a3b8';
+                controls.style.display = 'none';
+                pythonServerOnline = false;
+                log('Python backend mode DISABLED (using face-api.js)', 'info');
+            }
+        }
+
+        async function testPythonServer() {
+            pythonServerURL = document.getElementById('pythonURL').value.trim();
+            const status = document.getElementById('pythonStatus');
+
+            try {
+                status.textContent = 'Testing...';
+                status.style.color = '#ed8936';
+
+                const resp = await fetch(pythonServerURL + '/', { timeout: 3000 });
+                const data = await resp.json();
+
+                if (data.status === 'running') {
+                    pythonServerOnline = true;
+                    const info = data.model_loaded
+                        ? `Online ✅ (${data.model_info.num_people} people, ${data.model_info.num_encodings} encodings)`
+                        : 'Online ✅ (no model trained yet)';
+                    status.textContent = info;
+                    status.style.color = '#48bb78';
+                    log('Python server connected: ' + pythonServerURL, 'info');
+                    if (!data.model_loaded) {
+                        log('⚠️ No model trained. Add images to dataset/ and run Train.', 'warn');
+                    }
+                } else {
+                    throw new Error('Unexpected response');
+                }
+            } catch (e) {
+                pythonServerOnline = false;
+                status.textContent = 'Offline ❌';
+                status.style.color = '#e53e3e';
+                log('Python server not reachable: ' + e.message, 'err');
+            }
+        }
+
+        async function runPythonDetection() {
+            try {
+                // Convert canvas to JPEG blob
+                const blob = await new Promise(resolve => videoCanvas.toBlob(resolve, 'image/jpeg', 0.85));
+                const formData = new FormData();
+                formData.append('image', blob, 'frame.jpg');
+
+                const resp = await fetch(pythonServerURL + '/recognize', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await resp.json();
+
+                // Clear overlay
+                overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+
+                const numFaces = data.count;
+                document.getElementById('detCount').textContent = numFaces;
+                document.getElementById('facesBadge').textContent = numFaces + ' face' + (numFaces !== 1 ? 's' : '');
+
+                if (numFaces === 0) {
+                    document.getElementById('recName').textContent = '—';
+                    document.getElementById('recConf').textContent = '—';
+                    return;
+                }
+
+                // Scale factor: canvas display size vs actual pixel size
+                const scaleX = videoCanvas.width / videoCanvas.getBoundingClientRect().width || 1;
+                const scaleY = videoCanvas.height / videoCanvas.getBoundingClientRect().height || 1;
+
+                data.faces.forEach((face, idx) => {
+                    const loc = face.location;
+                    const x = loc.left;
+                    const y = loc.top;
+                    const w = loc.right - loc.left;
+                    const h = loc.bottom - loc.top;
+
+                    const label = face.name;
+                    const confidence = Math.round(face.confidence);
+                    const color = label !== 'Unknown' ? '#48bb78' : '#e53e3e';
+
+                    // Draw bounding box
+                    overlayCtx.strokeStyle = color;
+                    overlayCtx.lineWidth = 2.5;
+                    overlayCtx.strokeRect(x, y, w, h);
+
+                    // Draw label
+                    const labelText = label + (confidence > 0 ? ` (${confidence}%)` : '');
+                    overlayCtx.font = 'bold 14px Inter, sans-serif';
+                    const textWidth = overlayCtx.measureText(labelText).width;
+                    const labelY = y > 24 ? y - 8 : y + h + 20;
+
+                    overlayCtx.fillStyle = color;
+                    overlayCtx.beginPath();
+                    overlayCtx.roundRect(x - 1, labelY - 16, textWidth + 12, 22, 4);
+                    overlayCtx.fill();
+
+                    overlayCtx.fillStyle = '#fff';
+                    overlayCtx.fillText(labelText, x + 5, labelY);
+
+                    if (idx === 0) {
+                        document.getElementById('recName').textContent = label;
+                        document.getElementById('recConf').textContent = confidence > 0 ? confidence + '%' : '—';
+                    }
+                });
+
+            } catch (e) {
+                console.error('Python detection error:', e);
+            }
+        }
+
+        async function captureTrainingImage() {
+            if (!connected) {
+                log('Connect to ESP32-CAM first!', 'warn');
+                return;
+            }
+
+            const name = prompt('Enter person name for training:');
+            if (!name || !name.trim()) return;
+
+            log('Capturing training image for "' + name.trim() + '"...', 'info');
+
+            try {
+                // Send current canvas frame to Python server
+                const blob = await new Promise(resolve => videoCanvas.toBlob(resolve, 'image/jpeg', 0.95));
+                const formData = new FormData();
+                formData.append('image', blob, 'capture.jpg');
+                formData.append('name', name.trim());
+
+                const resp = await fetch(pythonServerURL + '/capture_training', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await resp.json();
+
+                if (data.success) {
+                    log('✅ ' + data.message + ' (' + data.total_images + ' total images)', 'info');
+                } else {
+                    log('❌ ' + (data.error || 'Capture failed'), 'err');
+                }
+            } catch (e) {
+                log('❌ Capture error: ' + e.message, 'err');
+            }
+        }
+
+        async function triggerTraining() {
+            log('🧠 Training model... This may take a while.', 'info');
+            const status = document.getElementById('pythonStatus');
+            status.textContent = 'Training...';
+            status.style.color = '#ed8936';
+
+            try {
+                const resp = await fetch(pythonServerURL + '/train', {
+                    method: 'POST'
+                });
+                const data = await resp.json();
+
+                if (data.success) {
+                    log('✅ ' + data.message, 'info');
+                    log('   People: ' + data.model_info.people.join(', '), 'info');
+                    log('   Encodings: ' + data.model_info.num_encodings, 'info');
+                    testPythonServer(); // Refresh status
+                } else {
+                    log('❌ Training failed: ' + (data.error || 'Unknown error'), 'err');
+                    if (data.output) console.log('Training output:', data.output);
+                    status.textContent = 'Training failed ❌';
+                    status.style.color = '#e53e3e';
+                }
+            } catch (e) {
+                log('❌ Training error: ' + e.message, 'err');
+                status.textContent = 'Error ❌';
+                status.style.color = '#e53e3e';
+            }
+        }
+
+        async function viewEnrolledPython() {
+            try {
+                const resp = await fetch(pythonServerURL + '/enrolled');
+                const data = await resp.json();
+
+                let msg = `\n📋 Enrolled People (${data.total_people}):\n`;
+                for (const [name, info] of Object.entries(data.people)) {
+                    msg += `  👤 ${name}: ${info.image_count} images\n`;
+                }
+                if (data.total_people === 0) {
+                    msg += '  (none)\n';
+                }
+                msg += `\nModel loaded: ${data.model_loaded ? 'Yes ✅' : 'No ❌'}`;
+                if (data.model_info && data.model_info.trained_at) {
+                    msg += `\nLast trained: ${data.model_info.trained_at}`;
+                }
+                alert(msg);
+            } catch (e) {
+                log('❌ Could not fetch enrolled list: ' + e.message, 'err');
+            }
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        //  INIT
+        // ══════════════════════════════════════════════════════════════
+        document.addEventListener('DOMContentLoaded', function () {
+            log('AROHAN Face Recognition initialized.', 'info');
+            log('Enter ESP32-CAM IP address and click Connect.', 'info');
+
+            // Load enrolled faces from localStorage
+            loadFacesFromStorage();
+            renderEnrolledList();
+
+            // Enter key to connect
+            document.getElementById('camIP').addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') toggleConnect();
+            });
+            document.getElementById('enrollName').addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') confirmEnroll();
+            });
+
+            // Polyfill roundRect if needed
+            if (!CanvasRenderingContext2D.prototype.roundRect) {
+                CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+                    this.moveTo(x + r, y);
+                    this.lineTo(x + w - r, y);
+                    this.quadraticCurveTo(x + w, y, x + w, y + r);
+                    this.lineTo(x + w, y + h - r);
+                    this.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+                    this.lineTo(x + r, y + h);
+                    this.quadraticCurveTo(x, y + h, x, y + h - r);
+                    this.lineTo(x, y + r);
+                    this.quadraticCurveTo(x, y, x + r, y);
+                    this.closePath();
+                };
+            }
+        });
+    </script>
+</body>
+
+</html>

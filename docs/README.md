@@ -1,233 +1,178 @@
-# AROHAN - Autonomous Safety Monitoring System
+# AROHAN Rover Command Center
 
-## Documentation Index
+## What is AROHAN?
 
-Welcome to the AROHAN project documentation. This comprehensive guide covers all aspects of the system from setup to deployment.
+AROHAN (Autonomous Rover for Observation and Hazard Analysis Network) is a comprehensive IoT-based safety monitoring and autonomous rover control system designed for industrial environments, construction sites, and hazardous areas. The system combines real-time sensor monitoring, computer vision-based face recognition, AI-powered hazard analysis, and autonomous rover control into a unified command center.
 
----
+### Problem Statement
 
-## 📚 Documentation Structure
+Industrial and hazardous environments face multiple safety challenges:
+- **Real-time hazard detection**: Gas leaks, fire, high temperatures, and poor air quality require immediate detection
+- **Personnel safety**: Tracking authorized personnel and detecting unauthorized access
+- **Emergency response**: Rapid assessment and response to dangerous conditions
+- **Remote monitoring**: Need for 24/7 monitoring without constant human presence
+- **Data-driven decisions**: Lack of historical data for safety trend analysis
 
-### Getting Started
-- [Quick Start Guide](setup/QUICK_START.md) - Get up and running in 5 minutes
-- [Installation Guide](setup/INSTALLATION.md) - Detailed installation instructions
-- [Configuration Guide](setup/CONFIGURATION.md) - Environment and Firebase setup
+### Solution
 
-### Architecture
-- [System Overview](architecture/SYSTEM_OVERVIEW.md) - High-level architecture
-- [Technology Stack](architecture/TECH_STACK.md) - Technologies and frameworks used
-- [Database Schema](architecture/DATABASE_SCHEMA.md) - Firebase Realtime Database structure
-- [Authentication Flow](architecture/AUTHENTICATION.md) - Security and auth implementation
+AROHAN provides:
+- **Live IoT sensor monitoring** with real-time hazard score calculation
+- **Computer vision** for face detection, recognition, and accident detection
+- **AI-powered analysis** using Groq LLaMA3 for hazard assessment and safety recommendations
+- **Autonomous rover** with remote control and auto-dispatch capabilities
+- **Historical data logging** for trend analysis and compliance reporting
+- **Alert system** with severity classification and automated notifications
 
-### API Documentation
-- [Frontend API](api/FRONTEND_API.md) - React hooks and services
-- [Backend API](api/BACKEND_API.md) - Flask CV backend endpoints
-- [Firebase API](api/FIREBASE_API.md) - Database operations
+### Who Uses AROHAN?
 
-### Deployment
-- [Production Deployment](deployment/PRODUCTION.md) - Deploy to Firebase Hosting
-- [Environment Setup](deployment/ENVIRONMENT.md) - Production environment configuration
-- [CI/CD Pipeline](deployment/CICD.md) - Automated deployment setup
+- **Safety Officers**: Monitor hazardous conditions and respond to alerts
+- **Site Managers**: Track safety metrics and compliance
+- **Security Personnel**: Identify authorized/unauthorized personnel
+- **Emergency Responders**: Access real-time data during incidents
+- **Operations Teams**: Control rover for remote inspection
 
-### Troubleshooting
-- [Common Issues](troubleshooting/COMMON_ISSUES.md) - Frequently encountered problems
-- [Debug Guide](troubleshooting/DEBUG_GUIDE.md) - Debugging techniques
-- [FAQ](troubleshooting/FAQ.md) - Frequently asked questions
-
----
-
-## 🎯 Project Overview
-
-**AROHAN** is a full-stack autonomous safety monitoring system that combines:
-- Real-time IoT sensor monitoring (MQ2, MQ135, DHT, Flame, Motion)
-- Computer vision and face recognition
-- Live ESP32-CAM streaming
-- Firebase cloud integration
-- Responsive web dashboard with real-time charts
-- Automated alert system
-- Rover control interface
-
----
-
-## 🏗️ System Architecture
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                     AROHAN System                            │
-├─────────────────────────────────────────────────────────────┤
-│                                                               │
-│  ┌──────────────┐      ┌──────────────┐      ┌───────────┐ │
-│  │   Frontend   │◄────►│   Firebase   │◄────►│  Backend  │ │
-│  │ React + Vite │      │   Realtime   │      │  Flask CV │ │
-│  │ Port: 8080   │      │   Database   │      │ Port: 5000│ │
-│  └──────────────┘      └──────────────┘      └───────────┘ │
-│         ▲                      ▲                     ▲       │
-│         │                      │                     │       │
-│         └──────────────────────┴─────────────────────┘       │
-│                                │                              │
-│                                ▼                              │
-│                    ┌────────────────────┐                    │
-│                    │   ESP32-CAM        │                    │
-│                    │   + IoT Sensors    │                    │
-│                    │   192.168.1.18:81  │                    │
-│                    └────────────────────┘                    │
-└─────────────────────────────────────────────────────────────┘
-```
-
----
-
-## 🚀 Quick Start
-
-### Prerequisites
-- Node.js 18+
-- Python 3.8+
-- Firebase CLI
-- Git
-
-### Installation
-
-```bash
-# Clone repository
-git clone <repository-url>
-cd ronin
-
-# Install frontend dependencies
-cd frontend
-npm install
-
-# Install backend dependencies
-cd ../backend
-pip install -r requirements_cv.txt
-
-# Configure environment
-cp frontend/.env.example frontend/.env
-# Edit frontend/.env with your Firebase credentials
-
-# Start services
-cd frontend && npm run dev          # Terminal 1
-cd backend && python start_cv_backend.py  # Terminal 2
-```
-
-### Access Application
-- Frontend: http://localhost:8080
-- Backend: http://localhost:5000
-- Firebase Console: https://console.firebase.google.com/project/ronin-80b29
-
----
-
-## 📊 Key Features
-
-### Real-Time Monitoring
-- Live sensor data visualization
-- Hazard score calculation
-- Risk level assessment
-- Historical data tracking
-
-### Computer Vision
-- Face detection and recognition
-- Accident detection
-- Snapshot capture and storage
-- Firebase Storage integration
-
-### Rover Control
-- Manual and autonomous modes
-- Live camera streaming
-- Mission tracking
-- Emergency stop functionality
-
-### Alert System
-- Real-time alert generation
-- Severity classification
-- Alert history and timeline
-- Automated notifications
-
----
-
-## 🛠️ Technology Stack
+## Tech Stack
 
 ### Frontend
-- React 18.3.1
-- TypeScript 5.8.3
-- Vite 5.4.19
-- Shadcn/ui + Tailwind CSS
-- Recharts for data visualization
-- Firebase SDK 12.6.0
+- **React 18.3.1** - UI framework
+- **TypeScript 5.8.3** - Type-safe development
+- **Vite 5.4.19** - Build tool and dev server
+- **Tailwind CSS 3.4.17** - Utility-first styling
+- **Shadcn/ui** - Component library (Radix UI primitives)
+- **Firebase 12.6.0** - Realtime Database for live data sync
+- **React Router v6.30.1** - Client-side routing
+- **Recharts 2.15.4** - Data visualization
+- **Groq AI API** - LLaMA3-8B-8192 for hazard analysis
+- **Lucide React 0.462.0** - Icon library
+- **React Hook Form 7.61.1** - Form management
+- **Zod 3.25.76** - Schema validation
+- **date-fns 3.6.0** - Date utilities
+- **Sonner 1.7.4** - Toast notifications
 
-### Backend
-- Python 3.13.1
-- Flask 3.0.0
-- OpenCV 4.12.0.88
-- NumPy 2.2.1
-- Firebase Admin SDK
+### Backend (CV Backend)
+- **Python 3.10+** - Programming language
+- **Flask 3.0.0** - Web framework
+- **Flask-CORS 4.0.0** - Cross-origin resource sharing
+- **OpenCV 4.x** - Computer vision (DNN + Haar cascade face detection)
+- **face_recognition** - FaceNet-based face encoding (dlib)
+- **NumPy** - Numerical operations
+- **Pillow** - Image processing
+- **Requests** - HTTP client for ESP32 communication
+- **Firebase Admin SDK** - Alert sync and snapshot storage
+- **python-dotenv** - Environment configuration
 
-### Database & Auth
-- Firebase Realtime Database
-- Firebase Authentication
-- Firebase Storage
-- Firebase Hosting
+### Database & Cloud
+- **Firebase Realtime Database** - NoSQL real-time data sync
+- **Firebase Storage** - Snapshot image storage
+- **Firebase Authentication** - User authentication (Email/Password)
 
 ### Hardware
-- ESP32-CAM
-- MQ2 Gas Sensor
-- MQ135 Air Quality Sensor
-- DHT Temperature/Humidity Sensor
-- Flame Sensor
-- PIR Motion Sensor
+- **ESP32-CAM (AI-Thinker)** - Camera module with WiFi
+- **MQ-2 Gas Sensor** - Combustible gas detection (LPG, propane, methane)
+- **MQ-135 Air Quality Sensor** - Air quality monitoring (CO2, NH3, benzene)
+- **DHT11/DHT22** - Temperature and humidity sensor
+- **Flame Sensor** - Fire detection
+- **PIR Motion Sensor** - Motion detection
+- **Ultrasonic Sensor (HC-SR04)** - Distance measurement
+- **Rover Chassis** - Motor-driven platform with L298N motor driver
 
----
+## Quick Links
 
-## 📖 Documentation Sections
+- [System Architecture](./ARCHITECTURE.md) - High-level system design and component interaction
+- [Frontend Documentation](./FRONTEND.md) - Complete React/TypeScript frontend guide
+- [Backend Documentation](./BACKEND.md) - CV Backend (Flask/Python) reference
+- [System Flow](./SYSTEM_FLOW.md) - End-to-end data flow diagrams
+- [Database Schema](./DATABASE.md) - Firebase Realtime Database structure
+- [API Reference](./API.md) - CV Backend REST API endpoints
+- [Setup Guide](./SETUP.md) - Installation and configuration
+- [Component Reference](./COMPONENTS.md) - React component documentation
 
-### For Developers
-- [Setup Guide](setup/INSTALLATION.md) - Development environment setup
-- [Architecture](architecture/SYSTEM_OVERVIEW.md) - System design and structure
-- [API Reference](api/FRONTEND_API.md) - API documentation
-- [Debug Guide](troubleshooting/DEBUG_GUIDE.md) - Debugging techniques
+## Key Features
 
-### For Operators
-- [Quick Start](setup/QUICK_START.md) - Get started quickly
-- [Configuration](setup/CONFIGURATION.md) - System configuration
-- [Troubleshooting](troubleshooting/COMMON_ISSUES.md) - Problem resolution
+### 1. Real-Time Monitoring Dashboard
+- Live sensor data visualization (gas, temperature, humidity, flame, motion)
+- Calculated hazard score (0-100) with risk level classification
+- Online/offline status for IoT nodes and rover
+- Historical trend charts with configurable time windows
 
-### For Administrators
-- [Deployment](deployment/PRODUCTION.md) - Production deployment
-- [Environment Setup](deployment/ENVIRONMENT.md) - Environment configuration
-- [Security](architecture/AUTHENTICATION.md) - Security best practices
+### 2. Computer Vision System
+- **Face Detection**: DNN-based (res10 SSD) with Haar cascade fallback
+- **Face Recognition**: FaceNet encodings with IoU-based tracking
+- **Quality Filtering**: Blur detection, size validation, aspect ratio checks
+- **Training Pipeline**: Automatic augmentation (flip, brightness, blur)
+- **Caching**: LRU cache for face encodings to reduce computation
 
----
+### 3. AI-Powered Hazard Analysis
+- Groq LLaMA3-8B-8192 model for natural language analysis
+- Real-time sensor data interpretation
+- Chemical identification and risk assessment
+- PPE recommendations and safety protocols
+- Emergency contact information
+- Do-not list (actions to avoid)
 
-## 🔗 Useful Links
+### 4. Autonomous Rover Control
+- Manual control (forward, backward, left, right, stop)
+- Auto-dispatch on high hazard scores
+- Mission tracking (IDLE → DISPATCHED → EN_ROUTE → INVESTIGATING → RETURNING)
+- Saved path navigation
+- Live camera stream with 180° rotation correction
+- Battery monitoring with auto-return on low battery
 
-- **Firebase Console**: https://console.firebase.google.com/project/ronin-80b29
-- **Project Repository**: [GitHub URL]
-- **Issue Tracker**: [Issues URL]
-- **Documentation**: You're here!
+### 5. Alert System
+- Severity classification (LOW, MEDIUM, HIGH, CRITICAL)
+- Alert types: Fire, Gas Leak, Air Quality, High Temperature, Motion, Known/Unknown Face
+- Snapshot capture with Firebase Storage upload
+- Alert history with filtering and search
+- Real-time notifications via Firebase
 
----
+### 6. Historical Data Analysis
+- Sensor data logging every 5 minutes
+- Trend visualization with Recharts
+- Export capabilities for compliance reporting
+- Automatic cleanup (keeps last 1000 entries)
 
-## 📞 Support
+## System Requirements
 
-For issues, questions, or contributions:
-1. Check [Common Issues](troubleshooting/COMMON_ISSUES.md)
-2. Review [FAQ](troubleshooting/FAQ.md)
-3. Check [Debug Guide](troubleshooting/DEBUG_GUIDE.md)
-4. Contact development team
+### Development Environment
+- **Node.js 18+** (for frontend)
+- **Python 3.10+** (for CV backend)
+- **Git** (version control)
+- **Firebase CLI** (optional, for deployment)
 
----
+### Hardware (Optional)
+- **ESP32-CAM module** (AI-Thinker board)
+- **IoT sensors** (MQ-2, MQ-135, DHT, Flame, PIR)
+- **Rover chassis** with motor driver
+- **Power supply** (5V for ESP32, 12V for motors)
 
-## 📄 License
+### Cloud Services (Free Tier)
+- **Firebase** (Realtime Database + Storage + Auth)
+- **Groq** (14,400 requests/day free tier)
 
-[Your License Here]
-
----
-
-## 👥 Team
-
-- Shadan
-- Shivam
-
----
+## Project Status
 
 **Version**: 1.0.0  
-**Last Updated**: February 28, 2026  
-**Status**: Production Ready
+**Status**: Production Ready  
+**Last Updated**: March 17, 2026
+
+## License
+
+MIT License - See LICENSE file for details
+
+## Team
+
+**AROHAN Development Team (TECHEEZ)**
+- Shadan - Developer
+- Shivam - Developer
+
+## Support
+
+For issues, questions, or contributions:
+1. Check the [Setup Guide](./SETUP.md) for installation help
+2. Review [System Flow](./SYSTEM_FLOW.md) for understanding data flow
+3. Consult [API Reference](./API.md) for backend integration
+4. Open an issue on GitHub for bugs or feature requests
+
+---
+
+**Made with ❤️ by the AROHAN Team**

@@ -11,7 +11,7 @@ import http from 'http';
 import https from 'https';
 
 // Configuration (update these to match your setup)
-const ESP32_BASE_URL = process.env.VITE_ESP32_BASE_URL || 'http://192.168.1.18';
+const ESP32_BASE_URL = process.env.VITE_ESP32_BASE_URL || 'http://192.168.1.22';
 const STREAM_ENDPOINT = process.env.VITE_ESP32_STREAM_ENDPOINT || '/stream';
 const CAPTURE_ENDPOINT = process.env.VITE_ESP32_CAPTURE_ENDPOINT || '/capture';
 const CONTROL_ENDPOINT = process.env.VITE_ESP32_CONTROL_ENDPOINT || '/control';

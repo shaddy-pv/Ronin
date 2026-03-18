@@ -2,7 +2,7 @@
 
 import http from 'http';
 
-const ESP32_BASE_URL = 'http://192.168.1.18';
+const ESP32_BASE_URL = 'http://192.168.1.22';
 
 // Common streaming endpoints for different ESP32-CAM firmwares
 const streamEndpoints = [

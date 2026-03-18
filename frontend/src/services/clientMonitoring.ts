@@ -39,11 +39,9 @@ class ClientMonitoringService {
    */
   start() {
     if (this.config.enabled) {
-      console.log('[ClientMonitoring] Already running');
       return;
     }
 
-    console.log('[ClientMonitoring] Starting monitoring service...');
     this.config.enabled = true;
 
     // Monitor IoT readings for hazards
@@ -57,15 +55,12 @@ class ClientMonitoringService {
 
     // Start periodic history logging
     this.startHistoryLogging();
-
-    console.log('[ClientMonitoring] ✓ Monitoring service started');
   }
 
   /**
    * Stop monitoring service
    */
   stop() {
-    console.log('[ClientMonitoring] Stopping monitoring service...');
     this.config.enabled = false;
 
     // Clear history timer
@@ -77,15 +72,13 @@ class ClientMonitoringService {
     // Unsubscribe from all listeners
     this.unsubscribers.forEach(unsub => unsub());
     this.unsubscribers = [];
-
-    console.log('[ClientMonitoring] ✓ Monitoring service stopped');
   }
 
   /**
    * Monitor IoT readings for hazardous conditions
    */
   private monitorHazards() {
-    const iotRef = ref(database, 'arohan/iot');
+    const iotRef = ref(database, 'ronin/iot_nodes/iotA');
 
     const unsubscribe = onValue(iotRef, (snapshot) => {
       const data = snapshot.val();
@@ -106,7 +99,6 @@ class ClientMonitoringService {
             timestamp: Date.now()
           }
         });
-        console.log('[ClientMonitoring] 🔥 Fire alert created');
       }
 
       // High gas levels - HIGH SEVERITY
@@ -122,7 +114,6 @@ class ClientMonitoringService {
             timestamp: Date.now()
           }
         });
-        console.log('[ClientMonitoring] ⚠️ Gas leak alert created');
       }
 
       // Poor air quality - MEDIUM SEVERITY
@@ -137,7 +128,6 @@ class ClientMonitoringService {
             timestamp: Date.now()
           }
         });
-        console.log('[ClientMonitoring] 💨 Air quality alert created');
       }
 
       // High temperature - MEDIUM SEVERITY
@@ -153,7 +143,6 @@ class ClientMonitoringService {
             timestamp: Date.now()
           }
         });
-        console.log('[ClientMonitoring] 🌡️ High temperature alert created');
       }
 
       // High hazard score - AUTO-DISPATCH ROVER
@@ -173,7 +162,6 @@ class ClientMonitoringService {
             timestamp: Date.now()
           }
         });
-        console.log('[ClientMonitoring] 📊 High hazard alert created');
 
         // Check if auto-dispatch is enabled
         this.checkAutoDispatch(data.hazardScore);
@@ -190,7 +178,6 @@ class ClientMonitoringService {
             timestamp: Date.now()
           }
         });
-        console.log('[ClientMonitoring] 👤 Motion alert created');
       }
     });
 
@@ -201,7 +188,7 @@ class ClientMonitoringService {
    * Monitor rover battery levels
    */
   private monitorBattery() {
-    const batteryRef = ref(database, 'arohan/rover/status/battery');
+    const batteryRef = ref(database, 'ronin/rover/status/battery');
 
     const unsubscribe = onValue(batteryRef, (snapshot) => {
       const battery = snapshot.val();
@@ -222,7 +209,6 @@ class ClientMonitoringService {
             timestamp: Date.now()
           }
         });
-        console.log('[ClientMonitoring] 🔋 Low battery alert created');
       }
 
       // Critical battery (10%)
@@ -237,7 +223,6 @@ class ClientMonitoringService {
             timestamp: Date.now()
           }
         });
-        console.log('[ClientMonitoring] 🔋 Critical battery alert created');
 
         // Auto-return to base if enabled
         this.checkAutoReturn();
@@ -251,7 +236,7 @@ class ClientMonitoringService {
    * Monitor IoT node connection status
    */
   private monitorConnection() {
-    const onlineRef = ref(database, 'arohan/iot/status/online');
+    const onlineRef = ref(database, 'ronin/iot_nodes/iotA/status/online');
 
     const unsubscribe = onValue(onlineRef, (snapshot) => {
       const online = snapshot.val();
@@ -272,7 +257,6 @@ class ClientMonitoringService {
             timestamp: Date.now()
           }
         });
-        console.log('[ClientMonitoring] 📡 Node offline alert created');
       }
 
       // Node came back online
@@ -285,7 +269,6 @@ class ClientMonitoringService {
             timestamp: Date.now()
           }
         });
-        console.log('[ClientMonitoring] ✅ Node online alert created');
       }
     });
 
@@ -303,8 +286,6 @@ class ClientMonitoringService {
     this.historyTimer = setInterval(() => {
       this.logHistory();
     }, this.config.historyInterval);
-
-    console.log(`[ClientMonitoring] History logging every ${this.config.historyInterval / 60000} minutes`);
   }
 
   /**
@@ -312,11 +293,10 @@ class ClientMonitoringService {
    */
   private async logHistory() {
     try {
-      const iotSnapshot = await get(ref(database, 'arohan/iot'));
+      const iotSnapshot = await get(ref(database, 'ronin/iot_nodes/iotA'));
       const data = iotSnapshot.val();
 
       if (!data) {
-        console.log('[ClientMonitoring] No IoT data to log');
         return;
       }
 
@@ -335,8 +315,7 @@ class ClientMonitoringService {
         )
       };
 
-      await push(ref(database, 'arohan/history'), historyEntry);
-      console.log('[ClientMonitoring] ✓ History entry logged');
+      await push(ref(database, 'ronin/history'), historyEntry);
 
       // Clean up old history (keep last 1000)
       this.cleanupHistory();
@@ -350,7 +329,7 @@ class ClientMonitoringService {
    */
   private async cleanupHistory() {
     try {
-      const historySnapshot = await get(ref(database, 'arohan/history'));
+      const historySnapshot = await get(ref(database, 'ronin/history'));
       const historyData = historySnapshot.val();
 
       if (!historyData) return;
@@ -363,11 +342,10 @@ class ClientMonitoringService {
 
         const updates: any = {};
         toDelete.forEach(([key]) => {
-          updates[`arohan/history/${key}`] = null;
+          updates[`ronin/history/${key}`] = null;
         });
 
         await set(ref(database), updates);
-        console.log(`[ClientMonitoring] Cleaned up ${toDelete.length} old history entries`);
       }
     } catch (error) {
       console.error('[ClientMonitoring] Error cleaning history:', error);
@@ -385,8 +363,7 @@ class ClientMonitoringService {
         resolved: false
       };
 
-      await push(ref(database, 'arohan/alerts'), alertData);
-      console.log('[ClientMonitoring] ✓ Alert created:', alertData.type);
+      await push(ref(database, 'ronin/alerts'), alertData);
     } catch (error) {
       console.error('[ClientMonitoring] Error creating alert:', error);
     }
@@ -397,16 +374,14 @@ class ClientMonitoringService {
    */
   private async checkAutoDispatch(hazardScore: number) {
     try {
-      const settingsSnapshot = await get(ref(database, 'arohan/settings/roverBehavior'));
+      const settingsSnapshot = await get(ref(database, 'ronin/settings/roverBehavior'));
       const roverBehavior = settingsSnapshot.val();
 
       if (roverBehavior && roverBehavior.autoDispatchEnabled) {
-        console.log('[ClientMonitoring] Auto-dispatch enabled, sending rover...');
-
         const dispatchTime = Date.now();
 
         // Set rover control to auto mode
-        await set(ref(database, 'arohan/rover/control'), {
+        await set(ref(database, 'ronin/rover/control'), {
           mode: 'auto',
           direction: 'forward',
           speed: 50,
@@ -414,7 +389,7 @@ class ClientMonitoringService {
         });
 
         // Create mission record in Firebase
-        await set(ref(database, 'arohan/rover/mission'), {
+        await set(ref(database, 'ronin/rover/mission'), {
           status: 'DISPATCHED',
           dispatchedAt: dispatchTime,
           reason: `High hazard score detected (${hazardScore.toFixed(1)}/100)`,
@@ -435,8 +410,6 @@ class ClientMonitoringService {
             timestamp: dispatchTime
           }
         });
-
-        console.log('[ClientMonitoring] ✓ Rover dispatched and mission created');
       }
     } catch (error) {
       console.error('[ClientMonitoring] Error checking auto-dispatch:', error);
@@ -448,18 +421,16 @@ class ClientMonitoringService {
    */
   private async checkAutoReturn() {
     try {
-      const settingsSnapshot = await get(ref(database, 'arohan/settings/roverBehavior/returnToBaseAfterCheck'));
+      const settingsSnapshot = await get(ref(database, 'ronin/settings/roverBehavior/returnToBaseAfterCheck'));
       const returnToBase = settingsSnapshot.val();
 
       if (returnToBase === true) {
-        await set(ref(database, 'arohan/rover/control'), {
+        await set(ref(database, 'ronin/rover/control'), {
           mode: 'auto',
           direction: 'back',
           speed: 30,
           emergency: false
         });
-
-        console.log('[ClientMonitoring] ✓ Rover returning to base (low battery)');
       }
     } catch (error) {
       console.error('[ClientMonitoring] Error checking auto-return:', error);

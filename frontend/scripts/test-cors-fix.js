@@ -5,7 +5,7 @@
 
 const testUrls = [
   'http://localhost:8080/api/camera/capture',  // Through proxy
-  'http://192.168.1.18/capture'               // Direct (should fail with CORS)
+  'http://192.168.1.22/capture'               // Direct (should fail with CORS)
 ];
 
 async function testCorsfix() {

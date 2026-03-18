@@ -28,16 +28,6 @@ export const SensorDetailDrawer = ({ open, onOpenChange, sensorType }: SensorDet
     maxPoints: 20 // Limit to 20 points for clean display
   });
 
-  // Debug logging
-  console.log('[SensorDetailDrawer] Render:', {
-    open,
-    sensorType,
-    iotReadings: iotReadings ? 'present' : 'null',
-    roverSensors: roverSensors ? 'present' : 'null',
-    chartDataLength: chartData.length,
-    isRoverConnected
-  });
-
   // Calculate temperature stats from real-time chart data
   const tempStats = useMemo(() => {
     if (chartData.length === 0) return null;
@@ -71,13 +61,6 @@ export const SensorDetailDrawer = ({ open, onOpenChange, sensorType }: SensorDet
       roverMQ135: roverSensors?.mq135 ?? null,
       roverTemp: roverSensors?.temperature ?? null,
     }];
-
-    console.log('[MQ2 Detail] Chart Data:', {
-      dataLength: displayData.length,
-      latestPoint: displayData[displayData.length - 1],
-      fixedMQ2: iotReadings.mq2,
-      roverMQ2: roverSensors?.mq2
-    });
 
     return (
       <div className="space-y-6">
@@ -214,13 +197,6 @@ export const SensorDetailDrawer = ({ open, onOpenChange, sensorType }: SensorDet
       roverMQ135: roverSensors?.mq135 ?? null,
       roverTemp: roverSensors?.temperature ?? null,
     }];
-
-    console.log('[MQ135 Detail] Chart Data:', {
-      dataLength: displayData.length,
-      latestPoint: displayData[displayData.length - 1],
-      fixedMQ135: iotReadings.mq135_digital,
-      roverMQ135: roverSensors?.mq135
-    });
 
     return (
       <div className="space-y-6">

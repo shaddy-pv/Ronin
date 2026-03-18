@@ -42,7 +42,6 @@ export const useRealtimeChartData = (options: UseRealtimeChartDataOptions = {}) 
   // Update chart data whenever IoT or Rover readings change
   useEffect(() => {
     if (!iotReadings) {
-      console.log('[useRealtimeChartData] No IoT readings available');
       return;
     }
 
@@ -65,7 +64,6 @@ export const useRealtimeChartData = (options: UseRealtimeChartDataOptions = {}) 
     if (lastAddedTimeRef.current !== 0 && 
         timeSinceLastAdd < MIN_INTERVAL_MS && 
         currentValues === lastValuesRef.current) {
-      console.log('[useRealtimeChartData] Skipping - too soon and no value change:', timeSinceLastAdd, 'ms');
       return;
     }
     
@@ -86,29 +84,12 @@ export const useRealtimeChartData = (options: UseRealtimeChartDataOptions = {}) 
       roverTemp: roverSensors?.temperature ?? null,
     };
 
-    console.log('[useRealtimeChartData] ✅ Adding new data point:', {
-      timestamp: now,
-      time: newDataPoint.time,
-      fixedMQ2: newDataPoint.fixedMQ2,
-      fixedMQ135: newDataPoint.fixedMQ135,
-      roverMQ2: newDataPoint.roverMQ2,
-      roverMQ135: newDataPoint.roverMQ135,
-      timeSinceLastAdd: timeSinceLastAdd,
-      totalPoints: chartData.length + 1
-    });
-
     setChartData(prev => {
       // Add new point
       const updated = [...prev, newDataPoint];
       
       // Apply time window filtering and limit points
       const filtered = buildTimeSeries(updated, windowMinutes, maxPoints);
-      
-      console.log('[useRealtimeChartData] 📊 Chart data updated:', {
-        previousCount: prev.length,
-        newCount: filtered.length,
-        latestPoint: filtered[filtered.length - 1]
-      });
       
       return filtered;
     });
@@ -125,8 +106,6 @@ export const useRealtimeChartData = (options: UseRealtimeChartDataOptions = {}) 
       
       // Only add if it's been at least 5 seconds since last point
       if (timeSinceLastAdd >= 5000) {
-        console.log('[useRealtimeChartData] ⏰ Periodic update - adding point');
-        
         lastAddedTimeRef.current = now;
         
         const newDataPoint: ChartDataPoint = {
@@ -144,7 +123,6 @@ export const useRealtimeChartData = (options: UseRealtimeChartDataOptions = {}) 
         setChartData(prev => {
           const updated = [...prev, newDataPoint];
           const filtered = buildTimeSeries(updated, windowMinutes, maxPoints);
-          console.log('[useRealtimeChartData] ⏰ Periodic update complete:', filtered.length, 'points');
           return filtered;
         });
       }

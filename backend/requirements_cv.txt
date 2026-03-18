@@ -1,17 +1,17 @@
-# Computer Vision Backend Requirements
+# AROHAN CV Backend Requirements
+
 flask==3.0.0
 flask-cors==4.0.0
-opencv-python
+opencv-contrib-python   # DNN + Haar cascade face detection
 numpy
 requests
+Pillow
+python-dotenv
 
-# For advanced face recognition (requires CMake - optional)
-# face-recognition
+# Primary recognizer — FaceNet based (requires cmake + dlib)
+# Install with: pip install face-recognition
+# If this fails, the backend auto-falls back to LBP+HOG (no extra deps needed)
+face-recognition
 
-# Firebase Admin SDK for automatic snapshot uploads
+# Optional: Firebase snapshot upload + alert sync
 firebase-admin
-
-# Optional: For deep learning models
-# tensorflow==2.13.0
-# torch==2.0.1
-# torchvision==0.15.2

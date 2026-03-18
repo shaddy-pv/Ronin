@@ -1,5 +1,5 @@
 import { NavLink } from "@/components/NavLink";
-import { LayoutDashboard, Cpu, AlertTriangle, History, Settings, LogOut, User, Lightbulb } from "lucide-react";
+import { LayoutDashboard, Cpu, AlertTriangle, History, Settings, LogOut, User, Lightbulb, Camera } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -14,6 +14,7 @@ export const Sidebar = () => {
   const navItems = [
     { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
     { to: "/rover", icon: Cpu, label: "Rover Console" },
+    { to: "/face-recognition", icon: Camera, label: "Face Recognition" },
     { to: "/solution", icon: Lightbulb, label: "Solution" },
     { to: "/alerts", icon: AlertTriangle, label: "Alerts" },
     { to: "/history", icon: History, label: "History" },
